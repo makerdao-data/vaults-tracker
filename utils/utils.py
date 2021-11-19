@@ -76,7 +76,7 @@ def get_last_refresh(sf):
     query = """
         SELECT
             DISTINCT LAST_BLOCK, LAST_TIME
-        FROM MCD_PUBLIC.PUBLIC.CURRENT_VAULTS"""
+        FROM MCD.PUBLIC.CURRENT_VAULTS"""
     
 
     results = sf.execute(query).fetchone()

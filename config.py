@@ -40,15 +40,13 @@ def get_variable(name):
 # Blockchain node connection
 NODE = get_variable('BC_NODE')
 
-# Google BigQuery connection
-BQ_PROJECT = 'mcd-265409'
-BQ_CREDENTIALS = get_variable('BQ_CREDENTIALS')
-
 # Snowflake connection
 SNOWFLAKE_CONNECTION = dict(
     account=get_variable('SNOWFLAKE_ACCOUNT'),
     user=get_variable('SNOWFLAKE_USER'),
-    password=get_variable('SNOWFLAKE_PASS'))
+    password=get_variable('SNOWFLAKE_PASS'),
+    warehouse='COMPUTE_WH',
+    database='MCD')
 
 # list of API tokens
 api_tokens = get_variable('API_PUBLIC_TOKENS')

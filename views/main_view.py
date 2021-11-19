@@ -54,7 +54,7 @@ def main_page_data(sf):
                 owner,
                 collateralization, 
                 osm_price 
-            FROM public.current_vaults; """
+            FROM mcd.public.current_vaults; """
 
         all_queries = [
             dict(query=vaults_query, id='vaults'),
@@ -152,7 +152,7 @@ def main_page_data(sf):
 
         sin = sf.execute(f"""
             select sin
-            from internal.vow
+            from mcd.internal.vow
             order by timestamp desc
             limit 1;
         """

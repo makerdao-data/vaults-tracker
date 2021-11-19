@@ -54,7 +54,7 @@ def owner_page_data(sf, owner_id):
                     available_debt,
                     available_collateral,
                     osm_price
-                FROM mcd_public.public.current_vaults
+                FROM mcd.public.current_vaults
                 WHERE owner = '%s'; """ % owner_id
 
         # snowflake data ingestion

@@ -455,7 +455,7 @@ def get_ilks_state(request):
                 available_collateral,
                 owner,
                 collateralization
-            FROM mcd_public.public.current_vaults
+            FROM mcd.public.current_vaults
             ORDER BY principal + accrued_fees DESC;"""
 
         vaults = sf.execute(vaults_query).fetchall()
@@ -464,7 +464,7 @@ def get_ilks_state(request):
             SELECT
                 distinct ilk,
                 last_value(mat) over (partition by ilk order by timestamp) as mat
-            FROM mcd_public.internal.mats;"""
+            FROM mcd.internal.mats;"""
 
         mats_records = sf.execute(mats_records_query).fetchall()
 
@@ -476,7 +476,7 @@ def get_ilks_state(request):
             SELECT
                 distinct token,
                 last_value(osm_price) over (partition by token order by time) as price
-            FROM mcd_public.internal.prices;"""
+            FROM mcd.internal.prices;"""
 
         prices_records = sf.execute(prices_records_query).fetchall()
 
@@ -593,18 +593,18 @@ def get_vault_state_for_block(vault, block):
                     round(sum(dprincipal), 6) as principal, 
                     round(sum(dfees), 6) as paid_fees,
                     min(block) as block_created, min(timestamp) as time_created
-                from mcd_public.public.vaults
+                from mcd.public.vaults
                 where vault = '{vault}' and block <= {block}
                 group by vault, ilk, urn) v join
                 (select distinct ilk, last_value(rate) over (partition by ilk order by block) as rate
-                from mcd_public.internal.rates
+                from mcd.internal.rates
                 where block <= {block}) r on v.ilk = r.ilk join
                 (select distinct token, coalesce(last_value(osm_price) over (partition by token order by block), 1) as osm_price, 
                                 last_value(mkt_price) over (partition by token order by block) as mkt_price
-                from mcd_public.internal.prices
+                from mcd.internal.prices
                 where block <= {block}) p on (split(v.ilk, '-')[0] = p.token or split(v.ilk, '-')[1] = p.token) join
                 (select distinct ilk, last_value(mat) over (partition by ilk order by block) as ratio 
-                from mcd_public.internal.mats
+                from mcd.internal.mats
                 where block <= {block}) m on v.ilk = m.ilk;"""
             
             sf_dict = connection.cursor(snowflake.connector.DictCursor)

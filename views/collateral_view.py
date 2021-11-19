@@ -43,7 +43,7 @@ def collateral_page_data(sf, collateral_id):
     try:
 
         # SQL injection protection
-        collaterals = sf.execute("SELECT distinct ilk FROM mcd_public.internal.ilks; ").fetchall()
+        collaterals = sf.execute("SELECT distinct ilk FROM mcd.internal.ilks; ").fetchall()
 
         collaterals = [c[0] for c in collaterals]
         if collateral_id not in collaterals:
@@ -61,7 +61,7 @@ def collateral_page_data(sf, collateral_id):
                     available_collateral,
                     osm_price,
                     ratio
-                FROM mcd_public.public.current_vaults
+                FROM mcd.public.current_vaults
                 WHERE ilk = '%s'; """ % collateral_id
 
         # snowflake data ingestion
@@ -143,7 +143,7 @@ def collateral_page_data(sf, collateral_id):
         available_debt = "{0:,.2f}".format(available_debt) if available_debt else "0"
 
         pip_oracle = sf.execute("""SELECT pip_oracle_address, type
-                                    FROM mcd_public.internal.ilks
+                                    FROM mcd.internal.ilks
                                     WHERE split_part(ilk, '-', 1) = '{}';
                                     """.format(token)).fetchone()
 
@@ -208,7 +208,7 @@ def collateral_page_view(sf, collateral_id):
                 ilk,
                 block,
                 timestamp
-            FROM mcd_public.internal.ilks; """).fetchall()
+            FROM mcd.internal.ilks; """).fetchall()
 
         created_block = created_time = None
         for collateral in collaterals:

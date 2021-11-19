@@ -63,13 +63,13 @@ def vault_page_data(sf, vault_id):
                     dart,
                     rate,
                     ratio
-                FROM mcd_public.public.vaults
+                FROM mcd.public.vaults
                 WHERE vault = '%s'
                 ORDER BY order_index; """ % vault_id
 
         current_query = """
                 SELECT *
-                FROM mcd_public.public.current_vaults
+                FROM mcd.public.current_vaults
                 WHERE vault = '%s'; """ % vault_id
 
         all_queries = [
@@ -165,14 +165,14 @@ def vault_page_data(sf, vault_id):
                         (SELECT
                             distinct date(timestamp) as date,
                             last_value(rate) over (partition by date(timestamp) order by timestamp) as rate
-                            FROM mcd_public.internal.rates
+                            FROM mcd.internal.rates
                             WHERE ilk = '%s'
                             AND date(timestamp) between '%s' AND '%s') r
                     JOIN
                         (SELECT
                             distinct date(time) as date,
                             min(osm_price) over (partition by date(time)) as price
-                        FROM mcd_public.internal.prices
+                        FROM mcd.internal.prices
                         WHERE
                             token = '%s'
                             AND date(time) between '%s' and '%s') p
@@ -188,7 +188,7 @@ def vault_page_data(sf, vault_id):
                     SELECT
                         distinct date(timestamp) as date,
                         last_value(mat) over (partition by date(timestamp) order by timestamp) as mat
-                    FROM mcd_public.internal.mats
+                    FROM mcd.internal.mats
                     WHERE ilk = '%s'
                     ORDER BY date; """ % operations[-1][4]
 
@@ -232,7 +232,7 @@ def vault_page_data(sf, vault_id):
                 y3.append(_mat)
         
         pip_oracle = sf.execute("""SELECT pip_oracle_address, type
-                                    FROM mcd_public.internal.ilks
+                                    FROM mcd.internal.ilks
                                     WHERE split_part(ilk, '-', 1) = '{}';
                                     """.format(coin)).fetchone()
 
@@ -295,7 +295,7 @@ def vault_page_view(sf, vault_id):
 
         current = sf.execute("""
                             SELECT ilk, owner, block_created, time_created
-                            FROM mcd_public.public.current_vaults
+                            FROM mcd.public.current_vaults
                             WHERE vault = '%s'; """ % vault_id).fetchone()
 
         if not current:
