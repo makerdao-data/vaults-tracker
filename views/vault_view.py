@@ -92,13 +92,23 @@ def vault_page_data(sf, vault_id):
             ink += record[6]
             art += record[11]
             coll1 = 100 * Decimal((ink * record[10])) / (art * record[12] / 10 ** 45) if ink and art and record[10] and record[12] else None
+
+            if record[7]:
+                x = record[7]
+            elif record[11]:
+                x = record[11] / 10 ** 18
+            else:
+                x = ''
+            
+            print(x)
+
             operation = [
                 record[2],
                 link(record[5],
                 'https://ethtx.info/%s' % record[3],
                 '%s transaction' % record[5]) if record[5] else '',
                 "{0:,.2f}".format(record[6]) if record[6] else '',
-                "{0:,.2f}".format(record[7]) if record[7] else '',
+                "{0:,.2f}".format(x) if x != '' else x,
                 "{0:,.2f}".format(record[8]) if record[8] else '',
                 "{0:,.2f}".format(record[9]) if record[9] else '',
                 "{0:,.2f}".format(record[10]) if record[10] else '',
