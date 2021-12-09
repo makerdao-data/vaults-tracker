@@ -14,7 +14,7 @@ from flask import render_template, request
 from datetime import datetime
 from decimal import Decimal
 
-from utils.utils import async_queries, vault_check, get_last_refresh, get_next_price_from_chain, get_oracle_address
+from utils.utils import async_queries, vault_check, get_last_refresh, get_price_from_chain
 from connectors.sf import sf_connect
 from utils.tables import link
 
@@ -99,8 +99,6 @@ def vault_page_data(sf, vault_id):
                 x = record[11] / 10 ** 18
             else:
                 x = ''
-            
-            print(x)
 
             operation = [
                 record[2],
@@ -249,7 +247,7 @@ def vault_page_data(sf, vault_id):
         if coin == 'SAI':
             nxt = "{0:,.2f}".format(1)
         else:
-            nxt = "{0:,.2f}".format(get_next_price_from_chain(pip_oracle[0], pip_oracle[1])[1])
+            nxt = "{0:,.2f}".format(get_price_from_chain(pip_oracle[0], pip_oracle[1])[1])
 
         plot = vault_history_graph(x, y1, y2, y3)
 

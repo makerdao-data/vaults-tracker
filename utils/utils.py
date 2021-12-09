@@ -101,14 +101,9 @@ def get_oracle_address(ilk):
         return None
 
 
-def get_LPOracle_price(address):
+def get_next_LPOracle_price(address):
 
     next_price = 0
-    # abi = """[{"inputs":[],"name":"nxt","outputs":[{"internalType":"uint128","name":"val","type":"uint128"},{"internalType":"uint128","name":"has","type":"uint128"}],"stateMutability":"view","type":"function"},
-    #     {"inputs":[],"name":"cur","outputs":[{"internalType":"uint128","name":"val","type":"uint128"},{"internalType":"uint128","name":"has","type":"uint128"}],"stateMutability":"view","type":"function"}]"""
-
-    # pip_oracle = chain.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
-    # next_price = pip_oracle.functions.nxt().call()[0] / 10 ** 18
     x = chain.eth.getStorageAt(account=Web3.toChecksumAddress(address), position=4).hex()
     next_price = int(x[2:][32:], 16) / 10 ** 18
 
@@ -118,11 +113,6 @@ def get_LPOracle_price(address):
 def get_current_LPOracle_price(address):
 
     current_price = 0
-    # abi = """[{"inputs":[],"name":"nxt","outputs":[{"internalType":"uint128","name":"val","type":"uint128"},{"internalType":"uint128","name":"has","type":"uint128"}],"stateMutability":"view","type":"function"},
-    #     {"inputs":[],"name":"cur","outputs":[{"internalType":"uint128","name":"val","type":"uint128"},{"internalType":"uint128","name":"has","type":"uint128"}],"stateMutability":"view","type":"function"}]"""
-
-    # pip_oracle = chain.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
-    # current_price = pip_oracle.functions.cur().call()[0] / 10 ** 18
     x = chain.eth.getStorageAt(account=Web3.toChecksumAddress(address), position=3).hex()
     current_price = int(x[2:][32:], 16) / 10 ** 18
 
@@ -134,24 +124,13 @@ def get_DSValue_price(address):
     abi = """[{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]"""
     
     pip_oracle = chain.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
-    nxt = pip_oracle.functions.read().call()
-    next_price = int.from_bytes(nxt, byteorder='big') / 10 ** 18
+    price = pip_oracle.functions.read().call()
+    next_price = int.from_bytes(price, byteorder='big') / 10 ** 18
 
     return next_price
 
 
-def get_current_DSValue_price(address):
-
-    abi = """[{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]"""
-    
-    pip_oracle = chain.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
-    nxt = pip_oracle.functions.read().call()
-    next_price = int.from_bytes(nxt, byteorder='big') / 10 ** 18
-
-    return next_price
-
-
-def get_OSM_price(address):
+def get_next_OSM_price(address):
 
     nxt_price = chain.eth.getStorageAt(Web3.toChecksumAddress(address), 4).hex()
     next_price = int(nxt_price[34:], 16) / 10 ** 18
@@ -167,17 +146,17 @@ def get_current_OSM_price(address):
     return current_price
 
 
-def get_next_price_from_chain(address, type):
+def get_price_from_chain(address, type):
     
     if type == 'coin':
         current_price = get_current_OSM_price(address)
-        next_price = get_OSM_price(address)
+        next_price = get_next_OSM_price(address)
     elif type == 'stablecoin':
         current_price = get_DSValue_price(address)
         next_price = get_DSValue_price(address)
     elif type == 'lp':
         current_price = get_current_LPOracle_price(address)
-        next_price = get_LPOracle_price(address)
+        next_price = get_next_LPOracle_price(address)
     else:
         current_price = 0
         next_price = 0

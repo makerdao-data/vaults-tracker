@@ -19,7 +19,7 @@ from config import ACTIVE_DUST_LIMIT
 from connectors.sf import sf_connect
 from utils.tables import link
 from utils.vat import get_ilk_data
-from utils.utils import get_last_refresh, get_next_price_from_chain, get_current_OSM_price
+from utils.utils import get_last_refresh, get_price_from_chain
 
 from forms.forms import SearchForm
 from utils.searchbar import run_search
@@ -151,8 +151,8 @@ def collateral_page_data(sf, collateral_id):
             cur = "{0:,.2f}".format(1)
             nxt = "{0:,.2f}".format(1)
         else:
-            cur = "{0:,.2f}".format(get_next_price_from_chain(pip_oracle[0], pip_oracle[1])[0])
-            nxt = "{0:,.2f}".format(get_next_price_from_chain(pip_oracle[0], pip_oracle[1])[1])
+            cur = "{0:,.2f}".format(get_price_from_chain(pip_oracle[0], pip_oracle[1])[0])
+            nxt = "{0:,.2f}".format(get_price_from_chain(pip_oracle[0], pip_oracle[1])[1])
         
         r = requests.get('https://api.coinbase.com/v2/prices/{}-USD/spot?date={}'.format(token, datetime.utcnow().date()))
         market_price = None
