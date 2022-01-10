@@ -13,23 +13,34 @@
 # link generation for html table
 def link(item, url, title=None):
     if title:
-        title = 'title="%s"' % title
+        title = f"""title={title}"""
     else:
-        title = ''
-    return '<a %s href="%s">%s</a>' % (title, url, item)
+        title = ""
+    return f"""<a {title} href="{url}">{item}</a>"""
 
 
 # simple html table from a list
-def html_table(content, widths=None, table_class='simple-table', table_id='sorted-table', tooltip=True):
+def html_table(
+    content,
+    widths=None,
+    table_class="simple-table",
+    table_id="sorted-table",
+    tooltip=True,
+):
 
     if len(content) > 1:
-        html = "<table " + ("class='%s'" % table_class if table_class else '') + ("id='%s'" % table_id if table_id else '') + ">"
+        html = (
+            "<table "
+            + ("class='%s'" % table_class if table_class else "")
+            + ("id='%s'" % table_id if table_id else "")
+            + ">"
+        )
         html += "<thead><tr>"
         for i, column in enumerate(content[0]):
             if widths and len(widths) > i:
                 width = widths[i]
             else:
-                width = 'auto'
+                width = "auto"
             html += "<th width='%s'>" % width + str(column) + "</th>"
         html += "</tr></thead>"
         html += "<tbody>"
@@ -37,13 +48,17 @@ def html_table(content, widths=None, table_class='simple-table', table_id='sorte
             html += "<tr>"
             for i, content_item in enumerate(content_row):
                 if tooltip and i == len(content_row) - 1:
-                    html += '<td title="%s">' % str(content_item) + str(content_item) + "</td>"
+                    html += (
+                        '<td title="%s">' % str(content_item)
+                        + str(content_item)
+                        + "</td>"
+                    )
                 else:
                     html += "<td>" + str(content_item) + "</td>"
             html += "</tr>"
         html += "</tbody>"
         html += "</table>"
     else:
-        html = ''
+        html = ""
 
     return html

@@ -23,37 +23,36 @@ class EnvVariableError(Exception):
 def get_variable(name):
     if not os.environ.get(name):
         # load env variables from .env if .env available
-        if os.path.isfile(os.path.join(PROJECT_ROOT, '.env')):
-            load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
+        if os.path.isfile(os.path.join(PROJECT_ROOT, ".env")):
+            load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
             try:
                 return os.environ[name]
             except:
-                raise EnvVariableError('{} not available.'.format(name))
+                raise EnvVariableError("{} not available.".format(name))
         else:
-            raise EnvVariableError('.env file not available.')
-    
+            raise EnvVariableError(".env file not available.")
+
     else:
-        # load value from env if available 
+        # load value from env if available
         return os.environ[name]
 
 
 # Blockchain node connection
-NODE = get_variable('BC_NODE')
+NODE = get_variable("BC_NODE")
 
 # Snowflake connection
 SNOWFLAKE_CONNECTION = dict(
-    account=get_variable('SNOWFLAKE_ACCOUNT'),
-    user=get_variable('SNOWFLAKE_USER'),
-    password=get_variable('SNOWFLAKE_PASS'),
-    warehouse='COMPUTE_WH',
-    database='MCD')
-
-# list of API tokens
-api_tokens = get_variable('API_PUBLIC_TOKENS')
-API_TOKENS = api_tokens.replace(' ', '').replace('\n', '').split(',')
+    account=get_variable("SNOWFLAKE_ACCOUNT"),
+    user=get_variable("SNOWFLAKE_USER"),
+    password=get_variable("SNOWFLAKE_PASS"),
+    warehouse="COMPUTE_WH",
+    database="MCD",
+)
 
 # limit of debt for active vaults
 ACTIVE_DUST_LIMIT = 20
 
 # stablecoins
-STABLECOINS = ('USDC', 'USDT', 'TUSD', 'PAXUSD', 'GUSD')
+STABLECOINS = ("USDC", "USDT", "TUSD", "PAXUSD", "GUSD")
+
+SECRET = get_variable("SECRET")

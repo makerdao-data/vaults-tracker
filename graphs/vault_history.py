@@ -21,36 +21,41 @@ from utils.utils import safe_max
 def vault_history_graph(x, y1, y2, y3):
 
     data1 = [
-            go.Scatter(
-                x=x,
-                y=y1,
-                name='Debt (DAI)',
-                line={'color': '#1aab9b'},
-                fill='tozeroy',
-                yaxis="y"
-            ),
-            go.Scatter(
-                x=x,
-                y=y2,
-                name='Collateralization',
-                line={'color': '#006699'},
-                yaxis="y2"
-            ),
-            go.Scatter(
-                x=x,
-                y=y3,
-                name='Liquidation ratio',
-                line={'color': 'red'},
-                yaxis="y2"
-            )
-        ]
+        go.Scatter(
+            x=x,
+            y=y1,
+            name="Debt (DAI)",
+            line={"color": "#1aab9b"},
+            fill="tozeroy",
+            yaxis="y",
+        ),
+        go.Scatter(
+            x=x, y=y2, name="Collateralization", line={"color": "#006699"}, yaxis="y2"
+        ),
+        go.Scatter(
+            x=x, y=y3, name="Liquidation ratio", line={"color": "red"}, yaxis="y2"
+        ),
+    ]
 
-    layout1 = go.Layout(title={'text': "Vault in time (UTC)", 'x': 0.5, 'xanchor': 'center'}, plot_bgcolor='#fcfcfc', paper_bgcolor='#fcfcfc',
-                        height=275, margin={"b": 20, "l": 20, "r": 10, "t": 75, "pad": 10}, xaxis={'gridcolor': '#F0F0F0'},
-                        yaxis={'gridcolor': '#F0F0F0'}, legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="center", x=.5),
-                        yaxis2={'gridcolor': '#F0F0F0', 'side': 'right', 'tickformat': ',.0%', 'overlaying': 'y',
-                                'range': [1, min(safe_max([y or 0 for y in y2]) * 1.1, 20)]},
-                        hovermode="x unified", hoverlabel={'namelength': -1})
+    layout1 = go.Layout(
+        title={"text": "Vault in time (UTC)", "x": 0.5, "xanchor": "center"},
+        plot_bgcolor="#fcfcfc",
+        paper_bgcolor="#fcfcfc",
+        height=275,
+        margin={"b": 20, "l": 20, "r": 10, "t": 75, "pad": 10},
+        xaxis={"gridcolor": "#F0F0F0"},
+        yaxis={"gridcolor": "#F0F0F0"},
+        legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="center", x=0.5),
+        yaxis2={
+            "gridcolor": "#F0F0F0",
+            "side": "right",
+            "tickformat": ",.0%",
+            "overlaying": "y",
+            "range": [1, min(safe_max([y or 0 for y in y2]) * 1.1, 20)],
+        },
+        hovermode="x unified",
+        hoverlabel={"namelength": -1},
+    )
 
     figure1 = go.Figure(data=data1, layout=layout1)
 

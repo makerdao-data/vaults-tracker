@@ -12,8 +12,8 @@
 
 from connectors.chain import chain
 
-vat_address = '0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B'
-vat_abi = '''
+vat_address = "0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B"
+vat_abi = """
             [{"constant":true,"inputs":[],"name":"debt",
             "outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
             "payable":false,"stateMutability":"view","type":"function"},
@@ -33,7 +33,7 @@ vat_abi = '''
             {"constant":true,"inputs":[{"name":"address","type":"address"}],
             "name":"sin","outputs":[{"name":"sin","type":"uint256"}],
             "payable":false,"stateMutability":"view","type":"function"}]
-          '''
+          """
 
 
 # read ilk parameters directly form the chain
@@ -41,7 +41,7 @@ def get_ilk_data(ilk):
 
     try:
         vat = chain.eth.contract(address=vat_address, abi=vat_abi)
-        ilk_bytes = ('0x' + ilk.encode('utf-8').hex()).ljust(66, '0')
+        ilk_bytes = ("0x" + ilk.encode("utf-8").hex()).ljust(66, "0")
         Art, rate, _, line, _ = vat.functions.ilks(ilk_bytes).call()
 
     except Exception as e:

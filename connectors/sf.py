@@ -17,7 +17,9 @@ from config import SNOWFLAKE_CONNECTION
 
 
 def sf_connect():
-    connection = snowflake.connector.connect(**SNOWFLAKE_CONNECTION, client_session_keep_alive=True)
+    connection = snowflake.connector.connect(
+        **SNOWFLAKE_CONNECTION, client_session_keep_alive=True
+    )
     cursor = connection.cursor()
     return cursor
 

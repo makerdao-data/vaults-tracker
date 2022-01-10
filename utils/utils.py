@@ -28,7 +28,11 @@ def safe_max(sequence):
 
 
 def vault_check(vault_id):
-    return vault_id.isnumeric() or (len(vault_id) == 10 and vault_id[:2] == '0x') or vault_id == 'MIGRATION'
+    return (
+        vault_id.isnumeric()
+        or (len(vault_id) == 10 and vault_id[:2] == "0x")
+        or vault_id == "MIGRATION"
+    )
 
 
 # asynchronous queries execution using Snowflake
@@ -36,11 +40,8 @@ def async_queries(sf, all_queries):
 
     started_queries = []
     for i in all_queries:
-        sf.execute(i['query'])
-        started_queries.append(dict(
-            qid=sf.sfqid,
-            id=i['id']
-        ))
+        sf.execute(i["query"])
+        started_queries.append(dict(qid=sf.sfqid, id=i["id"]))
 
     all_results = {}
     limit = len(started_queries)
@@ -50,18 +51,20 @@ def async_queries(sf, all_queries):
 
         for i in started_queries:
 
-            if i['id'] not in all_results.keys():
+            if i["id"] not in all_results.keys():
 
                 try:
-                    check_results = sf.execute("""
+                    check_results = sf.execute(
+                        f"""
                         SELECT *
-                        FROM table(result_scan('%s'))
-                        """ % i['qid'])
+                        FROM table(result_scan('{i["qid"]}'))
+                        """
+                    )
 
                     if isinstance(check_results, SnowflakeCursor):
                         df = check_results.fetch_pandas_all()
                         result = df.where(pd.notnull(df), None).values.tolist()
-                        all_results[i['id']] = result
+                        all_results[i["id"]] = result
 
                 except Exception as e:
                     print(str(e))
@@ -76,8 +79,8 @@ def get_last_refresh(sf):
     query = """
         SELECT
             DISTINCT LAST_BLOCK, LAST_TIME
-        FROM MCD.PUBLIC.CURRENT_VAULTS"""
-    
+        FROM MCD.PUBLIC.CURRENT_VAULTS
+        """
 
     results = sf.execute(query).fetchone()
 
@@ -87,16 +90,16 @@ def get_last_refresh(sf):
 def get_oracle_address(ilk):
 
     # ilk transformation
-    if ilk in ('PSM', 'USDC', 'TUSD', 'USDT', 'SAI', 'GUSD', 'PAXUSD'):
+    if ilk in ("PSM", "USDC", "TUSD", "USDT", "SAI", "GUSD", "PAXUSD"):
         return None
 
-    source = 'https://changelog.makerdao.com/releases/mainnet/active/contracts.json'
+    source = "https://changelog.makerdao.com/releases/mainnet/active/contracts.json"
 
     get_changelog = requests.get(source)
     changelog = json.loads(get_changelog.text)
 
-    if 'PIP_' + ilk in  changelog.keys():
-        return changelog['PIP_' + ilk]
+    if "PIP_" + ilk in changelog.keys():
+        return changelog["PIP_" + ilk]
     else:
         return None
 
@@ -104,7 +107,9 @@ def get_oracle_address(ilk):
 def get_next_LPOracle_price(address):
 
     next_price = 0
-    x = chain.eth.getStorageAt(account=Web3.toChecksumAddress(address), position=4).hex()
+    x = chain.eth.getStorageAt(
+        account=Web3.toChecksumAddress(address), position=4
+    ).hex()
     next_price = int(x[2:][32:], 16) / 10 ** 18
 
     return next_price
@@ -113,7 +118,9 @@ def get_next_LPOracle_price(address):
 def get_current_LPOracle_price(address):
 
     current_price = 0
-    x = chain.eth.getStorageAt(account=Web3.toChecksumAddress(address), position=3).hex()
+    x = chain.eth.getStorageAt(
+        account=Web3.toChecksumAddress(address), position=3
+    ).hex()
     current_price = int(x[2:][32:], 16) / 10 ** 18
 
     return current_price
@@ -122,10 +129,10 @@ def get_current_LPOracle_price(address):
 def get_DSValue_price(address):
 
     abi = """[{"constant":true,"inputs":[],"name":"read","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]"""
-    
+
     pip_oracle = chain.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
     price = pip_oracle.functions.read().call()
-    next_price = int.from_bytes(price, byteorder='big') / 10 ** 18
+    next_price = int.from_bytes(price, byteorder="big") / 10 ** 18
 
     return next_price
 
@@ -147,14 +154,14 @@ def get_current_OSM_price(address):
 
 
 def get_price_from_chain(address, type):
-    
-    if type == 'coin':
+
+    if type == "coin":
         current_price = get_current_OSM_price(address)
         next_price = get_next_OSM_price(address)
-    elif type == 'stablecoin':
+    elif type == "stablecoin":
         current_price = get_DSValue_price(address)
         next_price = get_DSValue_price(address)
-    elif type == 'lp':
+    elif type == "lp":
         current_price = get_current_LPOracle_price(address)
         next_price = get_next_LPOracle_price(address)
     else:
