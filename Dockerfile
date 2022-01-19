@@ -11,9 +11,9 @@ RUN . /env/bin/activate
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 
-EXPOSE 8000
+EXPOSE 80
 
 CMD gunicorn --workers 4 --max-requests 1000 \
-    --timeout 240 --bind :8000 \
+    --timeout 240 --bind :80 \
     --error-logfile - --log-file - --log-level info \
     --worker-tmp-dir ./tmpfs/  app:app
