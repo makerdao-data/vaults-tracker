@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     {% include 'head.html' %}
+</head>
+<body>
+    <div class="parameters_dashboard">
+
+        <div class="header shadow">
+            <a href="/" class="logo-container"><img alt="logo" class="logo" src="{{ url_for('static', filename='logo.png') }}"></a>
+            <div class="title-form-container">
+                <div class="title-container">
+                    <div class="main_title">MCD Vaults Tracker</div>
+                    <div class="refresh">Vaults history</div>
+                </div>
+            </div>
+        </div>
+
+
+            <div class="right_panel shadow">
+                <div id="table_container">
+                    <div><h3 style="margin-top: 2px; ">Vaults history</h3></div>
+                    <div class="right-box">
+                        <table id="sorted-table" class="display nowrap" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Vault</th>
+                                    <th>Ilk</th>
+                                    <th>Collateral</th>
+                                    <th>Principal</th>
+                                    <th>Debt</th>
+                                    <th>Paid fees</th>
+                                    <th>Withdraw</th>
+                                    <th>Deposit</th>
+                                    <th>Principal generate</th>
+                                    <th>Principal payback</th>
+                                    <th>Debt generate</th>
+                                    <th>Debt payback</th>
+                                    <th>Accrued fees</th>
+                                </tr>
+                            </thead>
+                        </table>
+                        </div>
+                        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+                        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+                        <script>
+                            $(document).ready(function () {
+                              $('#sorted-table').DataTable({
+                    
+                                ajax: '/data/history',
+                                serverSide: true,
+                                autoWidth: false,
+                                columns: [
+                                    { 
+                                        data: "day",
+                                        render: function(data, type, row) {
+                                            if(type === "sort" || type === "type"){
+                                                return data;
+                                                }
+                                            return moment(data).format("YYYY-MM-DD HH:mm:SS");
+                                        }
+                                    },
+                                    { data: "vault" },
+                                    { data: "ilk" },
+                                    { data: "collateral_eod" },
+                                    { data: "principal_eod" },
+                                    { data: "debt_eod" },
+                                    { data: "fees_eod" },
+                                    { data: "withdraw" },
+                                    { data: "deposit" },
+                                    { data: "principal_generate" },
+                                    { data: "principal_payback" },
+                                    { data: "debt_generate" },
+                                    { data: "debt_payback" },
+                                    { data: "fees" }
+                                ],
+                                order: [[ 0, "desc" ]],
+                                lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
+                                pageLength: 50,
+                                dom: 'lBfrtip',
+                                buttons: [ {
+                                    extend: 'csv',
+                                    text: 'Export to CSV',
+                                    filename: 'MKR_vaults_history',
+                                    exportOptions: {
+                                        modifier: {
+                                            search: 'none'
+                                        }
+                                    }
+                                }]
+                    
+                              });
+                            });
+                          </script>
+                    </div>
+                </div>
+            </div>
+
+        <div class="footer shadow">
+            {% include 'footer.html' %}
+        </div>
+    </div>
+
+   
+</body>
+</html>
