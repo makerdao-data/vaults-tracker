@@ -53,33 +53,40 @@ app.config['SQLALCHEMY_DATABASE_URI'] = connect_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# SELF = "'self'"
-# UNSAFE_INLINE = "'unsafe-inline'"
-# UNSAFE_EVAL = "'unsafe-eval'"
-# talisman = Talisman(
-#     app,
-#     force_https=False,
-#     content_security_policy={
-#         "default-src": [SELF],
-#         "img-src": ["*", "data:"],
-#         "script-src": [
-#             SELF,
-#             UNSAFE_EVAL,
-#             UNSAFE_INLINE,
-#             "https://cdn.plot.ly/",
-#             "https://cdn.datatables.net/",
-#             "https://cdnjs.cloudflare.com/",
-#             "https://code.jquery.com/",
-#             "https://cdn.jsdelivr.net/",
-#             "https://cdn.datatables.net/"
+SELF = "'self'"
+UNSAFE_INLINE = "'unsafe-inline'"
+UNSAFE_EVAL = "'unsafe-eval'"
+talisman = Talisman(
+    app,
+    force_https=False,
+    content_security_policy={
+        "default-src": [SELF],
+        "img-src": ["*", "data:"],
+        "script-src": [
+            SELF,
+            UNSAFE_EVAL,
+            UNSAFE_INLINE,
+            "https://cdn.plot.ly/",
+            "https://cdn.datatables.net/",
+            "https://cdnjs.cloudflare.com/",
+            "https://code.jquery.com/",
+            "https://cdn.jsdelivr.net/",
+            "https://cdn.datatables.net/"
 
-#         ],
-#         "style-src": [SELF, UNSAFE_INLINE, "https://cdn.datatables.net/", "https://cdnjs.cloudflare.com/", "https://cdn.jsdelivr.net"],
-#         "font-src": [SELF, "https://cdnjs.cloudflare.com/"],
-#     },
-#     content_security_policy_nonce_in=["script-src"],
-#     feature_policy={"geolocation": "'none'"},
-# )
+        ],
+        "style-src": [
+            SELF,
+            UNSAFE_INLINE,
+            "https://cdn.datatables.net/",
+            "https://cdnjs.cloudflare.com/",
+            "https://cdn.jsdelivr.net",
+            "https://code.jquery.com/"
+        ],
+        "font-src": [SELF, "https://cdnjs.cloudflare.com/"],
+    },
+    content_security_policy_nonce_in=["script-src"],
+    feature_policy={"geolocation": "'none'"},
+)
 
 class History(db.Model):
 
