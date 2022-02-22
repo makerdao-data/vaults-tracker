@@ -19,10 +19,15 @@
         </div>
 
         <div class="right_panel shadow">
-            <div id="table_container" style="visibility: hidden;">
-                <div><h3 style="margin-top: 2px; ">Protocol parameters history</h3></div>
+
+            <h3 style="margin-top: 2px; ">Vaults history</h3>
+
+                    <div class="right-box">
+                        <input id='date-picker' type='date' />
+                    </div>
+
                 <div class="right-box">
-                    <table id="sorted-table" class="display nowrap" style="width:100%">
+                    <table id="sorted-table" class="display nowrap" style="width:99%">
                         <thead>
                             <tr>
                                 <th>Day</th>
@@ -48,9 +53,18 @@
                     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
                     <script>
                         $(document).ready(function () {
+                        
+                            var now = new Date();
+                            now.setDate(now.getDate() - 1); 
+                            var day = ("0" + now.getDate()).slice(-2);
+                            var month = ("0" + (now.getMonth() + 1)).slice(-2);
+                            var yesterday = now.getFullYear()+"-"+(month)+"-"+(day) ;
+
+                            $('#date-picker').val(yesterday);
+
                           $('#sorted-table').DataTable({
                 
-                            ajax: '/data/history',
+                            ajax: '/data/history/' +  $('#date-picker').val(),
                             serverSide: true,
                             autoWidth: false,
                             columns: [

@@ -19,9 +19,16 @@
 
             <div class="right_panel shadow">
                 <div id="table_container">
-                    <div><h3 style="margin-top: 2px; ">Vaults history</h3></div>
+                    <h3 style="margin-top: 2px; ">Vaults history</h3>
+
                     <div class="right-box">
-                        <table id="sorted-table" class="display nowrap" style="width:100%">
+                        <input id='date-picker' type='date' />
+                    </div>
+                    <div class="right-box">
+                        <button id='export'>Export</button>
+                    </div>
+                    <div class="right-box">
+                        <table id="sorted-table" class="simple-table dataTable no-footer" style="width:99%">
                             <thead>
                                 <tr>
                                     <th>Day</th>
@@ -46,9 +53,24 @@
                         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
                         <script nonce="{{ csp_nonce() }}">
                             $(document).ready(function () {
+
+                                
+
+                                var now = new Date();
+                                now.setDate(now.getDate() - 1); 
+                                var day = ("0" + now.getDate()).slice(-2);
+                                var month = ("0" + (now.getMonth() + 1)).slice(-2);
+                                var yesterday = now.getFullYear()+"-"+(month)+"-"+(day) ;
+
+                                $('#date-picker').val(yesterday);
+
+                                $("#export").on("click",function(){
+                                    window.open('/data/history_export/' +  $('#date-picker').val());
+                                });
+
                               $('#sorted-table').DataTable({
                     
-                                ajax: '/data/history',
+                                ajax: '/data/history/' +  $('#date-picker').val(),
                                 serverSide: true,
                                 autoWidth: false,
                                 columns: [
@@ -58,7 +80,7 @@
                                             if(type === "sort" || type === "type"){
                                                 return data;
                                                 }
-                                            return moment(data).format("YYYY-MM-DD HH:mm:SS");
+                                            return moment(data).format("YYYY-MM-DD");
                                         }
                                     },
                                     { data: "vault" },
@@ -79,19 +101,55 @@
                                 lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
                                 pageLength: 50,
                                 dom: 'lBfrtip',
-                                buttons: [ {
-                                    extend: 'csv',
-                                    text: 'Export to CSV',
-                                    filename: 'MKR_vaults_history',
-                                    exportOptions: {
-                                        modifier: {
-                                            search: 'none'
-                                        }
-                                    }
-                                }]
-                    
                               });
+
+                              $("#date-picker").on("change",function(){
+
+                                console.log( $('#date-picker').val() );
+                                $('#sorted-table').DataTable().clear();
+                                $('#sorted-table').DataTable().destroy();
+                                $('#sorted-table').DataTable({
+                    
+                                    ajax: '/data/history/' +  $('#date-picker').val(),
+                                    serverSide: true,
+                                    autoWidth: false,
+                                    columns: [
+                                        { 
+                                            data: "day",
+                                            render: function(data, type, row) {
+                                                if(type === "sort" || type === "type"){
+                                                    return data;
+                                                    }
+                                                return moment(data).format("YYYY-MM-DD");
+                                            }
+                                        },
+                                        { data: "vault" },
+                                        { data: "ilk" },
+                                        { data: "collateral_eod" },
+                                        { data: "principal_eod" },
+                                        { data: "debt_eod" },
+                                        { data: "fees_eod" },
+                                        { data: "withdraw" },
+                                        { data: "deposit" },
+                                        { data: "principal_generate" },
+                                        { data: "principal_payback" },
+                                        { data: "debt_generate" },
+                                        { data: "debt_payback" },
+                                        { data: "fees" }
+                                    ],
+                                    order: [[ 0, "desc" ]],
+                                    lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
+                                    pageLength: 50,
+                                    dom: 'lBfrtip',
+                                });
+
+                                
+                                
                             });
+
+                            });
+
+                            
                           </script>
                     </div>
                 </div>

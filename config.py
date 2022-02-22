@@ -56,3 +56,5 @@ ACTIVE_DUST_LIMIT = 20
 STABLECOINS = ("USDC", "USDT", "TUSD", "PAXUSD", "GUSD")
 
 SECRET = get_variable("SECRET")
+
+DEBUG = True
