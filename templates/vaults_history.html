@@ -21,11 +21,14 @@
                 <div id="table_container">
                     <h3 style="margin-top: 2px; ">Vaults history</h3>
 
-                    <div style="margin-top: 23px;">
-                        <div class="right-box" style="display: inline-block;">
-                            <input style="height: 24px;" id='date-picker' type='date' />
+                    <div style="padding-top: 10px; padding-bottom: 15px;">
+
+                        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 15px 5px 15px; border: 1px solid #ccc; display: inline-block; vertical-align: middle;">
+                            <i class="fa fa-calendar"></i>&nbsp;
+                            <span></span> <i class="fa fa-caret-down"></i>
                         </div>
-                        <div class="right-box" style="display: inline-block;">
+                        
+                        <div style="display: inline-block; vertical-align: middle;">
                             <button id='export' class="dt-button buttons-csv buttons-html5">Export to CSV</button>
                         </div>
                     </div>
@@ -53,66 +56,93 @@
                         </div>
                         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+                        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+                        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
                         <script nonce="{{ csp_nonce() }}">
+
                             $(document).ready(function () {
 
-                                
+                                $(function() {
 
-                                var now = new Date();
-                                now.setDate(now.getDate() - 1); 
-                                var day = ("0" + now.getDate()).slice(-2);
-                                var month = ("0" + (now.getMonth() + 1)).slice(-2);
-                                var yesterday = now.getFullYear()+"-"+(month)+"-"+(day) ;
+                                    var start = moment().subtract(1, 'days');
+                                    var end = moment().subtract(1, 'days');
 
-                                $('#date-picker').val(yesterday);
+                                    function cb(start, end) {
+                                        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                                    }
 
-                                $("#export").on("click",function(){
-                                    window.open('/data/history_export/' +  $('#date-picker').val());
+                                    $('#reportrange').daterangepicker({
+                                        startDate: start,
+                                        endDate: end,
+                                        ranges: {
+                                        'Today': [moment(), moment()],
+                                        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                                        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                                        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                                        'This Month': [moment().startOf('month'), moment().endOf('month')],
+                                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                                        }
+                                    }, cb);
+
+                                    cb(start, end);
+
                                 });
 
-                              $('#sorted-table').DataTable({
-                    
-                                ajax: '/data/history/' +  $('#date-picker').val(),
-                                serverSide: true,
-                                autoWidth: false,
-                                columns: [
-                                    { 
-                                        data: "day",
-                                        render: function(data, type, row) {
-                                            if(type === "sort" || type === "type"){
-                                                return data;
-                                                }
-                                            return moment(data).format("YYYY-MM-DD");
-                                        }
-                                    },
-                                    { data: "vault" },
-                                    { data: "ilk" },
-                                    { data: "collateral_eod" },
-                                    { data: "principal_eod" },
-                                    { data: "debt_eod" },
-                                    { data: "fees_eod" },
-                                    { data: "withdraw" },
-                                    { data: "deposit" },
-                                    { data: "principal_generate" },
-                                    { data: "principal_payback" },
-                                    { data: "debt_generate" },
-                                    { data: "debt_payback" },
-                                    { data: "fees" }
-                                ],
-                                order: [[ 0, "desc" ]],
-                                lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
-                                pageLength: 50,
-                                dom: 'lBfrtip',
-                              });
+                                $("#export").on("click",function(){
+                                    window.open('/data/history_export/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate);
+                                });
+                            
+                            function ld() {
+                                
+                                $('#sorted-table').DataTable({
+                                
+                                    ajax: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                    serverSide: true,
+                                    autoWidth: false,
+                                    columns: [
+                                        { 
+                                            data: "day",
+                                            render: function(data, type, row) {
+                                                if(type === "sort" || type === "type"){
+                                                    return data;
+                                                    }
+                                                return moment(data).format("YYYY-MM-DD");
+                                            }
+                                        },
+                                        { data: "vault" },
+                                        { data: "ilk" },
+                                        { data: "collateral_eod" },
+                                        { data: "principal_eod" },
+                                        { data: "debt_eod" },
+                                        { data: "fees_eod" },
+                                        { data: "withdraw" },
+                                        { data: "deposit" },
+                                        { data: "principal_generate" },
+                                        { data: "principal_payback" },
+                                        { data: "debt_generate" },
+                                        { data: "debt_payback" },
+                                        { data: "fees" }
+                                    ],
+                                    order: [[ 0, "desc" ]],
+                                    lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
+                                    pageLength: 50,
+                                    dom: 'lBfrtip',
+                                })
+                            }
 
-                              $("#date-picker").on("change",function(){
+                            $(function() {
+                                setTimeout(ld, 1000);
+                            });
+
+                            $('#reportrange').on('apply.daterangepicker', function(){
 
                                 console.log( $('#date-picker').val() );
                                 $('#sorted-table').DataTable().clear();
                                 $('#sorted-table').DataTable().destroy();
                                 $('#sorted-table').DataTable({
                     
-                                    ajax: '/data/history/' +  $('#date-picker').val(),
+                                    ajax: '/data/history/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
                                     serverSide: true,
                                     autoWidth: false,
                                     columns: [
