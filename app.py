@@ -10,7 +10,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, Response
 from datetime import datetime
 import atexit
 from flask_talisman import Talisman
@@ -18,6 +18,9 @@ from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 import sqlalchemy
 from sqlalchemy.dialects import registry
+from io import StringIO
+import csv
+from flask import make_response, send_file
 
 import os
 
@@ -28,6 +31,7 @@ from views.vault_view import vault_page_view, vault_page_data
 from views.collateral_view import collateral_page_view, collateral_page_data
 from views.owner_view import owner_page_view, owner_page_data
 from views.history_view import history_page_view
+from views.daily_history_view import daily_history_page_view
 
 registry.register("snowflake", "snowflake.sqlalchemy", "dialect")
 
@@ -53,33 +57,40 @@ app.config['SQLALCHEMY_DATABASE_URI'] = connect_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# SELF = "'self'"
-# UNSAFE_INLINE = "'unsafe-inline'"
-# UNSAFE_EVAL = "'unsafe-eval'"
-# talisman = Talisman(
-#     app,
-#     force_https=False,
-#     content_security_policy={
-#         "default-src": [SELF],
-#         "img-src": ["*", "data:"],
-#         "script-src": [
-#             SELF,
-#             UNSAFE_EVAL,
-#             UNSAFE_INLINE,
-#             "https://cdn.plot.ly/",
-#             "https://cdn.datatables.net/",
-#             "https://cdnjs.cloudflare.com/",
-#             "https://code.jquery.com/",
-#             "https://cdn.jsdelivr.net/",
-#             "https://cdn.datatables.net/"
+SELF = "'self'"
+UNSAFE_INLINE = "'unsafe-inline'"
+UNSAFE_EVAL = "'unsafe-eval'"
+talisman = Talisman(
+    app,
+    force_https=False,
+    content_security_policy={
+        "default-src": [SELF],
+        "img-src": ["*", "data:"],
+        "script-src": [
+            SELF,
+            UNSAFE_EVAL,
+            UNSAFE_INLINE,
+            "https://cdn.plot.ly/",
+            "https://cdn.datatables.net/",
+            "https://cdnjs.cloudflare.com/",
+            "https://code.jquery.com/",
+            "https://cdn.jsdelivr.net/",
+            "https://cdn.datatables.net/"
 
-#         ],
-#         "style-src": [SELF, UNSAFE_INLINE, "https://cdn.datatables.net/", "https://cdnjs.cloudflare.com/", "https://cdn.jsdelivr.net"],
-#         "font-src": [SELF, "https://cdnjs.cloudflare.com/"],
-#     },
-#     content_security_policy_nonce_in=["script-src"],
-#     feature_policy={"geolocation": "'none'"},
-# )
+        ],
+        "style-src": [
+            SELF,
+            UNSAFE_INLINE,
+            "https://cdn.datatables.net/",
+            "https://cdnjs.cloudflare.com/",
+            "https://cdn.jsdelivr.net",
+            "https://code.jquery.com/"
+        ],
+        "font-src": [SELF, "https://cdnjs.cloudflare.com/"],
+    },
+    content_security_policy_nonce_in=["script-src"],
+    feature_policy={"geolocation": "'none'"},
+)
 
 class History(db.Model):
 
@@ -117,6 +128,24 @@ class History(db.Model):
             'debt_payback' : self.debt_payback,
             'fees' : self.fees,
         }
+    
+    def to_list(self):
+        return [
+            self.day,
+            self.vault, 
+            self.ilk,
+            self.collateral_eod,
+            self.principal_eod,
+            self.debt_eod,
+            self.fees_eod,
+            self.withdraw,
+            self.deposit,
+            self.principal_generate,
+            self.principal_payback,
+            self.debt_generate,
+            self.debt_payback,
+            self.fees
+        ]
     
     __table_args__ = {"schema": "maker.history"}
     __mapper_args__ = {
@@ -173,6 +202,12 @@ def history_page():
     return history_page_view(sf)
 
 
+@app.route("/daily_history")
+def daily_history_page():
+    print(request.args)
+    return daily_history_page_view(sf)
+
+
 # DATA endpoints -------------------------------------------
 
 
@@ -200,18 +235,21 @@ def get_owner_page_data(owner_id):
     return jsonify(dataset)
 
 
-@app.route("/data/history", methods=["GET"])
-def data():
+@app.route("/data/history/<date>", methods=["GET"])
+def data(date):
+
     query = History.query
+    query = query.filter(History.day == date)
 
     # search filter
     search = request.args.get('search[value]')
     if search:
+
         query = query.filter(db.or_(
-            History.day.like(f'%{search}%'),
             History.vault.like(f'%{search}%'),
             History.ilk.like(f'%{search}%')
         ))
+
     total_filtered = query.count()
 
     # sorting
@@ -222,7 +260,7 @@ def data():
         if col_index is None:
             break
         col_name = request.args.get(f'columns[{col_index}][data]')
-        if col_name not in ['day', 'vault', 'ilk']:
+        if col_name not in ['day', 'vault', 'ilk', 'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod']:
             col_name = 'day'
         descending = request.args.get(f'order[{i}][dir]') == 'desc'
         col = getattr(History, col_name)
@@ -247,6 +285,28 @@ def data():
     }
 
 
+@app.route("/data/history_export/<date>", methods=["GET"])
+def history_export(date):
+
+    query = History.query
+    query = query.filter(History.day == date)
+
+    csv = 'day,vault, ilk,collateral_eod,principal_eod,debt_eod,fees_eod,withdraw,deposit,principal_generate,principal_payback,debt_generate,debt_payback,fees\n'
+
+    for i in query:
+        for j in i.to_list():
+            csv += (str(j) + ',')
+
+        csv = csv[:-1] + '\n'
+
+    response = make_response(csv)
+    response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+    response.mimetype='text/csv'
+
+    return response
+
+
+
 # cleanup tasks
 def cleanup_task():
     if not sf.is_closed():
@@ -258,4 +318,4 @@ atexit.register(cleanup_task)
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
