@@ -235,11 +235,14 @@ def get_owner_page_data(owner_id):
     return jsonify(dataset)
 
 
-@app.route("/data/history/<date>", methods=["GET"])
-def data(date):
+@app.route("/data/history/<s>/<e>", methods=["GET"])
+def data(s, e):
+
+    s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
+    e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
     query = History.query
-    query = query.filter(History.day == date)
+    query = query.filter(History.day >= s).filter(History.day <= e)
 
     # search filter
     search = request.args.get('search[value]')
@@ -285,11 +288,14 @@ def data(date):
     }
 
 
-@app.route("/data/history_export/<date>", methods=["GET"])
-def history_export(date):
+@app.route("/data/history_export/<s>/<e>", methods=["GET"])
+def history_export(s, e):
+
+    s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
+    e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
     query = History.query
-    query = query.filter(History.day == date)
+    query = query.filter(History.day >= s).filter(History.day <= e)
 
     csv = 'day,vault, ilk,collateral_eod,principal_eod,debt_eod,fees_eod,withdraw,deposit,principal_generate,principal_payback,debt_generate,debt_payback,fees\n'
 
