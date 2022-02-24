@@ -236,7 +236,7 @@ def get_owner_page_data(owner_id):
     return jsonify(dataset)
 
 
-@app.route("/data/history/<s>/<e>", methods=["GET"])
+@app.route("/data/history/<s>/<e>", methods=["GET", "POST"])
 def data(s, e):
 
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
@@ -244,6 +244,18 @@ def data(s, e):
 
     query = History.query
     query = query.filter(History.day >= s).filter(History.day <= e)
+
+    vault = request.args.get('search_vault')
+    if vault:
+        query = query.filter(db.or_(
+            History.vault == str(vault)
+        ))
+    
+    ilk = request.args.get('search_ilk')
+    if ilk:
+        query = query.filter(db.or_(
+            History.ilk == str(ilk)
+        ))
 
     # search filter
     search = request.args.get('search[value]')
@@ -297,6 +309,18 @@ def history_export(s, e):
 
     query = History.query
     query = query.filter(History.day >= s).filter(History.day <= e)
+
+    vault = request.args.get('search_vault')
+    if vault:
+        query = query.filter(db.or_(
+            History.vault == str(vault)
+        ))
+    
+    ilk = request.args.get('search_ilk')
+    if ilk:
+        query = query.filter(db.or_(
+            History.ilk == str(ilk)
+        ))
 
     def generate():
 

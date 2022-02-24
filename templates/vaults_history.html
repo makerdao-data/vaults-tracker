@@ -31,6 +31,28 @@
                         <div style="display: inline-block; vertical-align: middle;">
                             <button id='export' class="dt-button buttons-csv buttons-html5">Export to CSV</button>
                         </div>
+
+                        <div style="display: inline-block; vertical-align: middle;">
+                            <div>
+                                Vault:
+                                <input id="search_vault" name="search_vault" class="dataTables_filter" style="display: inline-block; vertical-align: middle; padding: 5px;" type="text" value="">
+                            </div>
+
+                        </div>
+
+                        <div style="display: inline-block; vertical-align: middle;">
+                            <div>
+                                Ilk:
+                                <input id="search_ilk" name="search_ilk" class="dataTables_filter" style="display: inline-block; vertical-align: middle; padding: 5px;" type="text" value="">
+                            </div>
+
+                        </div>
+
+
+                        <div style="display: inline-block; vertical-align: middle;">
+                            <button id="search_start" class="simple-button" type="submit"><i class="fa fa-search"></i></button>
+                        </div>
+
                     </div>
                     <div class="right-box">
                         <table id="sorted-table" class="simple-table dataTable no-footer" style="width:99%">
@@ -90,7 +112,43 @@
 
                                 $("#export").on("click",function(){
                                     if ((($('#reportrange').data('daterangepicker').startDate - $('#reportrange').data('daterangepicker').endDate) / 1000) / 86400 * -1 < 7){
-                                        window.open('/data/history_export/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate);
+
+                                        // window.open(
+                                        // '/data/history_export/' +
+                                        //             $('#reportrange').data('daterangepicker').startDate + '/' +
+                                        //             $('#reportrange').data('daterangepicker').endDate
+                                        //         );
+
+                                        const saveData = (function () {
+                                            const a = document.createElement("a");
+                                            document.body.appendChild(a);
+                                            a.style = "display: none";
+                                            return function (data, fileName) {
+                                                const blob = new Blob([data], {type: "octet/stream"}),
+                                                    url = window.URL.createObjectURL(blob);
+                                                a.href = url;
+                                                a.download = fileName;
+                                                a.click();
+                                                window.URL.revokeObjectURL(url);
+                                            };
+                                        }());
+
+                                        var req = $.ajax({
+                                            url: '/data/history_export/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                            data: {
+                                                "search_vault": $("#search_vault").val(),
+                                                "search_ilk": $("#search_ilk").val()
+                                            }
+                                        });
+
+                                        alert("Downloading in progess");
+
+                                        req.done(function() {
+                                            
+                                            saveData(req.responseText, 'export.csv');
+
+                                        });
+
                                     } else {
                                         alert("Data export is available only for 7 (or less) days intervals.");
                                     }
@@ -101,9 +159,16 @@
                                 
                                 $('#sorted-table').DataTable({
                                 
-                                    ajax: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                    ajax: {
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        data: {
+                                            "search_vault": $("#search_vault").val(),
+                                            "search_ilk": $("#search_ilk").val()
+                                        },
+                                    },
                                     serverSide: true,
                                     autoWidth: false,
+                                    searching: false,
                                     columns: [
                                         { 
                                             data: "day",
@@ -141,14 +206,67 @@
 
                             $('#reportrange').on('apply.daterangepicker', function(){
 
-                                console.log( $('#date-picker').val() );
                                 $('#sorted-table').DataTable().clear();
                                 $('#sorted-table').DataTable().destroy();
                                 $('#sorted-table').DataTable({
                     
-                                    ajax: '/data/history/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                    ajax: {
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        data: {
+                                            "search_vault": $("#search_vault").val(),
+                                            "search_ilk": $("#search_ilk").val()
+                                        },
+                                    },
                                     serverSide: true,
                                     autoWidth: false,
+                                    searching: false,
+                                    columns: [
+                                        { 
+                                            data: "day",
+                                            render: function(data, type, row) {
+                                                if(type === "sort" || type === "type"){
+                                                    return data;
+                                                    }
+                                                return moment(data).format("YYYY-MM-DD");
+                                            }
+                                        },
+                                        { data: "vault" },
+                                        { data: "ilk" },
+                                        { data: "collateral_eod" },
+                                        { data: "principal_eod" },
+                                        { data: "debt_eod" },
+                                        { data: "fees_eod" },
+                                        { data: "withdraw" },
+                                        { data: "deposit" },
+                                        { data: "principal_generate" },
+                                        { data: "principal_payback" },
+                                        { data: "debt_generate" },
+                                        { data: "debt_payback" },
+                                        { data: "fees" }
+                                    ],
+                                    order: [[ 0, "desc" ]],
+                                    lengthMenu: [[50, 100, 250 -1], [50, 100, 250, "All"]],
+                                    pageLength: 50,
+                                    dom: 'lBfrtip',
+                                });
+                            });
+
+                            $("#search_start").on("click",function(){
+
+                                $('#sorted-table').DataTable().clear();
+                                $('#sorted-table').DataTable().destroy();
+                                $('#sorted-table').DataTable({
+                    
+                                    ajax: {
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        data: {
+                                            "search_vault": $("#search_vault").val(),
+                                            "search_ilk": $("#search_ilk").val()
+                                        },
+                                    },
+                                    serverSide: true,
+                                    autoWidth: false,
+                                    searching: false,
                                     columns: [
                                         { 
                                             data: "day",
@@ -179,14 +297,11 @@
                                     dom: 'lBfrtip',
                                 });
 
-                                
-                                
                             });
-
-                            });
+                        });
 
                             
-                          </script>
+                    </script>
                     </div>
                 </div>
             </div>
