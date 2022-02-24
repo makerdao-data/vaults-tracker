@@ -18,9 +18,10 @@ from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 import sqlalchemy
 from sqlalchemy.dialects import registry
-from io import StringIO
 import csv
-from flask import make_response, send_file
+from io import StringIO
+from werkzeug.wrappers import Response
+
 
 import os
 
@@ -131,7 +132,7 @@ class History(db.Model):
     
     def to_list(self):
         return [
-            self.day,
+            self.day.__str__(),
             self.vault, 
             self.ilk,
             self.collateral_eod,
@@ -297,21 +298,29 @@ def history_export(s, e):
     query = History.query
     query = query.filter(History.day >= s).filter(History.day <= e)
 
-    csv = 'day,vault, ilk,collateral_eod,principal_eod,debt_eod,fees_eod,withdraw,deposit,principal_generate,principal_payback,debt_generate,debt_payback,fees\n'
+    def generate():
 
-    for i in query:
-        for j in i.to_list():
-            csv += (str(j) + ',')
+        data = StringIO()
+        w = csv.writer(data)
 
-        csv = csv[:-1] + '\n'
+        # write header
+        w.writerow(('day','vault', 'ilk','collateral_eod','principal_eod','debt_eod','fees_eod','withdraw','deposit','principal_generate','principal_payback','debt_generate','debt_payback','fees'))
+        yield data.getvalue()
+        data.seek(0)
+        data.truncate(0)
 
-    response = make_response(csv)
-    response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
-    response.mimetype='text/csv'
+        # write each log item
+        for item in query:
+            w.writerow(tuple(item.to_list()))
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
 
+    # stream the response as the data is generated
+    response = Response(generate(), mimetype='text/csv')
+    # add a filename
+    response.headers.set("Content-Disposition", "attachment", filename="export.csv")
     return response
-
-
 
 # cleanup tasks
 def cleanup_task():

@@ -89,7 +89,12 @@
                                 });
 
                                 $("#export").on("click",function(){
-                                    window.open('/data/history_export/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate);
+                                    if ((($('#reportrange').data('daterangepicker').startDate - $('#reportrange').data('daterangepicker').endDate) / 1000) / 86400 * -1 < 7){
+                                        window.open('/data/history_export/' +  $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate);
+                                    } else {
+                                        alert("Data export is available only for 7 (or less) days intervals.");
+                                    }
+                                    
                                 });
                             
                             function ld() {
