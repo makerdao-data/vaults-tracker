@@ -300,6 +300,22 @@
                             });
                         });
 
+                        var ilk_input = document.getElementById("search_ilk");
+                            ilk_input.addEventListener("keyup", function(event) {
+                                if (event.keyCode === 13) {
+                                event.preventDefault();
+                                document.getElementById("search_start").click();
+                            }
+                        });
+
+                        var vault_input = document.getElementById("search_vault");
+                            vault_input.addEventListener("keyup", function(event) {
+                                if (event.keyCode === 13) {
+                                event.preventDefault();
+                                document.getElementById("search_start").click();
+                            }
+                        });
+
                             
                     </script>
                     </div>
