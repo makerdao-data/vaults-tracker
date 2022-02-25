@@ -16,23 +16,23 @@ import atexit
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
+from sqlalchemy import create_engine
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects import registry
 import csv
 from io import StringIO
 from werkzeug.wrappers import Response
 
-
-import os
-
-from config import SECRET
+from config import SECRET, connect_url
 from connectors.sf import sf, sf_disconnect
 from views.main_view import main_page_view, main_page_data
 from views.vault_view import vault_page_view, vault_page_data
 from views.collateral_view import collateral_page_view, collateral_page_data
 from views.owner_view import owner_page_view, owner_page_data
 from views.history_view import history_page_view
-from views.daily_history_view import daily_history_page_view
+
 
 registry.register("snowflake", "snowflake.sqlalchemy", "dialect")
 
@@ -42,21 +42,15 @@ app.config["JSON_SORT_KEYS"] = False
 app.config["DEBUG"] = True
 csrf = CSRFProtect(app)
 
-connect_url = sqlalchemy.engine.url.URL(
-    "snowflake",
-    username=os.getenv("SNOWFLAKE_USER"),
-    password=os.getenv("SNOWFLAKE_PASS"),
-    host=os.getenv("SNOWFLAKE_ACCOUNT"),
-    query={
-        "database": os.getenv("SNOWFLAKE_DATABASE"),
-        "role": os.getenv("SNOWFLAKE_ROLE"),
-        "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE"),
-    },
-)
-
 app.config['SQLALCHEMY_DATABASE_URI'] = connect_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+db.session.client_session_keep_alive = True
+engine = create_engine(connect_url, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+Base.metadata.create_all(bind=engine)
 
 SELF = "'self'"
 UNSAFE_INLINE = "'unsafe-inline'"
@@ -157,8 +151,6 @@ class History(db.Model):
         ]
     }
 
-db.create_all()
-
 
 # HTML endpoints -------------------------------------------
 
@@ -203,12 +195,6 @@ def history_page():
     return history_page_view(sf)
 
 
-@app.route("/daily_history")
-def daily_history_page():
-    print(request.args)
-    return daily_history_page_view(sf)
-
-
 # DATA endpoints -------------------------------------------
 
 
@@ -239,6 +225,8 @@ def get_owner_page_data(owner_id):
 @app.route("/data/history/<s>/<e>", methods=["GET", "POST"])
 def data(s, e):
 
+    db = SessionLocal()
+
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
@@ -247,24 +235,15 @@ def data(s, e):
 
     vault = request.args.get('search_vault')
     if vault:
-        query = query.filter(db.or_(
+        query = query.filter(
             History.vault == str(vault)
-        ))
+        )
     
     ilk = request.args.get('search_ilk')
     if ilk:
-        query = query.filter(db.or_(
+        query = query.filter(
             History.ilk == str(ilk)
-        ))
-
-    # search filter
-    search = request.args.get('search[value]')
-    if search:
-
-        query = query.filter(db.or_(
-            History.vault.like(f'%{search}%'),
-            History.ilk.like(f'%{search}%')
-        ))
+        )
 
     total_filtered = query.count()
 
@@ -304,6 +283,8 @@ def data(s, e):
 @app.route("/data/history_export/<s>/<e>", methods=["GET"])
 def history_export(s, e):
 
+    db = SessionLocal()
+
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
@@ -312,15 +293,15 @@ def history_export(s, e):
 
     vault = request.args.get('search_vault')
     if vault:
-        query = query.filter(db.or_(
+        query = query.filter(
             History.vault == str(vault)
-        ))
+        )
     
     ilk = request.args.get('search_ilk')
     if ilk:
-        query = query.filter(db.or_(
+        query = query.filter(
             History.ilk == str(ilk)
-        ))
+        )
 
     def generate():
 

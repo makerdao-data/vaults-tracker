@@ -12,6 +12,7 @@
 
 import os
 from dotenv import load_dotenv
+import sqlalchemy
 
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 
@@ -58,3 +59,15 @@ STABLECOINS = ("USDC", "USDT", "TUSD", "PAXUSD", "GUSD")
 SECRET = get_variable("SECRET")
 
 DEBUG = True
+
+connect_url = sqlalchemy.engine.url.URL(
+    "snowflake",
+    username=os.getenv("SNOWFLAKE_USER"),
+    password=os.getenv("SNOWFLAKE_PASS"),
+    host=os.getenv("SNOWFLAKE_ACCOUNT"),
+    query={
+        "database": os.getenv("SNOWFLAKE_DATABASE"),
+        "role": os.getenv("SNOWFLAKE_ROLE"),
+        "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE"),
+    },
+)
