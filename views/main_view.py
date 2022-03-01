@@ -10,6 +10,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from json.tool import main
 from flask import render_template, request
 from datetime import datetime
 
@@ -22,6 +23,9 @@ from utils.vat import get_vat_data
 from forms.forms import SearchForm
 from utils.searchbar import run_search
 from graphs.collateralization import main_collateralization_graph
+from graphs.pie import main_pie, main_sunburst
+from graphs.bar import main_bar
+import plotly.express as px
 
 
 def main_page_data(sf):
@@ -105,12 +109,17 @@ def main_page_data(sf):
             if vault[7]:
                 bucket = min(round(vault[7]), 1000)
                 if vault[1].split("-")[0] in STABLECOINS:
+
                     if bucket not in coll_buckets_stable:
                         coll_buckets_stable[bucket] = 0
+
                     coll_buckets_stable[bucket] += vault[3]
+
                 else:
+
                     if bucket not in coll_buckets:
                         coll_buckets[bucket] = 0
+
                     coll_buckets[bucket] += vault[3]
 
             # aggregate collaterals info
@@ -229,10 +238,104 @@ def main_page_data(sf):
 
         coll_buckets = list(coll_buckets.items())
         coll_buckets.sort(key=lambda _c: _c[0])
+
         coll_buckets_stable = list(coll_buckets_stable.items())
         coll_buckets_stable.sort(key=lambda _c: _c[0])
 
         plot = main_collateralization_graph(coll_buckets_stable, coll_buckets)
+
+        sunburst_data = sf.execute("""
+            select concat(type, '-', token, '-', ilk) ID, *
+            from (select case
+            when SPLIT_PART(v.ilk, '-', 0) = 'PSM' then 'PSM'
+            when SPLIT_PART(v.ilk, '-', 0) = 'DIRECT' then 'D3M'
+            when v.ilk like 'GUNIV3%' then 'GUNIV3'
+            when type = 'coin' then 'TOKEN'
+            when type = 'lp' then 'LP TOKEN'
+            else upper(i.type)
+            end type, v.ilk,
+            case
+            when SPLIT_PART(v.ilk, '-', 0) = 'PSM' then SPLIT_PART(v.ilk, '-', 2)
+            else SPLIT_PART(v.ilk, '-', 0)
+            end token,
+            sum( v.collateral * v.osm_price ) value_locked, sum( v.debt ) debt
+            from mcd.public.current_vaults v
+            join mcd.internal.ilks i
+            on v.ilk = i.ilk
+            where v.ilk not like 'RWA00%' and collateral != 0
+            group by i.type, v.ilk
+            order by value_locked desc) as t;
+        """).fetchall()
+
+        sunburst_tokens = list()
+        sunburst_stablecoins = list()
+        sunburst_psm = list()
+        sunburst_others = list()
+
+        for id, type, ilk, token, value_locked, debt in sunburst_data:
+            
+            if type == 'STABLECOIN':
+                sunburst_stablecoins.append([id, type, ilk, token, value_locked, debt])
+            elif type == 'TOKEN':
+                sunburst_tokens.append([id, type, ilk, token, value_locked, debt])
+            elif type == 'PSM':
+                sunburst_psm.append([id, type, ilk, token, value_locked, debt])
+            else:
+                sunburst_others.append([id, type, ilk, token, value_locked, debt])
+
+        s_tokens = main_sunburst(sunburst_tokens, 'tempo')
+        s_stablecoins = main_sunburst(sunburst_stablecoins, 'portland')
+        s_psm = main_sunburst(sunburst_psm, 'agsunset')
+        s_others = main_sunburst(sunburst_others, 'picnic')
+
+        pie_data = sf.execute("""
+            select type, sum(value_locked), sum(debt)
+            from (
+            select
+            case
+            when SPLIT_PART(v.ilk, '-', 0) = 'PSM' then 'PSM'
+            when SPLIT_PART(v.ilk, '-', 0) = 'DIRECT' then 'D3M'
+            when v.ilk like 'GUNIV3%' then 'GUNIV3'
+            when type = 'coin' then 'TOKEN'
+            when type = 'lp' then 'LP TOKEN'
+            else upper(i.type)
+            end type,
+            v.ilk,
+            sum( v.collateral * v.osm_price ) value_locked, sum( v.debt ) debt
+            from mcd.public.current_vaults v
+            join mcd.internal.ilks i
+            on v.ilk = i.ilk
+            where v.ilk not like 'RWA0%' and collateral != 0
+            group by i.type, v.ilk
+            )
+            group by type;
+        """).fetchall()
+
+        pie = main_pie(pie_data)
+
+        bar_data = sf.execute("""
+            select type, case when type = 'RWA' then null else sum(value_locked) end VALUE_LOCKED, sum(debt)
+            from (
+            select
+            case
+            when SPLIT_PART(v.ilk, '-', 0) = 'PSM' then 'PSM'
+            when v.ilk like 'RWA0%' then 'RWA'
+            when SPLIT_PART(v.ilk, '-', 0) = 'DIRECT' then 'D3M'
+            when v.ilk like 'GUNIV3%' then 'G-UNI'
+            else upper('REGULAR VAULT')
+            end type,
+            v.ilk,
+            sum( v.collateral * v.osm_price ) value_locked, sum( v.debt ) debt
+            from mcd.public.current_vaults v
+            join mcd.internal.ilks i
+            on v.ilk = i.ilk
+            group by i.type, v.ilk
+            )
+            where debt > 0
+            group by type;
+        """).fetchall()
+
+        bar = main_bar(bar_data)
 
         sin = "{0:,.2f}".format(sin)
 
@@ -255,6 +358,12 @@ def main_page_data(sf):
                 refresh=datetime.utcnow(),
                 sin=sin,
                 plot=plot,
+                s_tokens=s_tokens,
+                s_stablecoins=s_stablecoins,
+                s_psm=s_psm,
+                s_others=s_others,
+                pie=pie,
+                bar=bar
             ),
         )
 

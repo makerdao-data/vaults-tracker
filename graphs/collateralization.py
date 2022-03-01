@@ -20,6 +20,8 @@ from utils.utils import safe_max
 # Collateralization graph for the main page
 def main_collateralization_graph(stable, non_stable):
 
+    data1 = []
+
     x = []
     y = []
     v_sum = 0
@@ -53,7 +55,8 @@ def main_collateralization_graph(stable, non_stable):
             y=y,
             name="Stable",
             mode="lines",
-            line={"color": "#1aab9b"},
+            # line={"color": "#1aab9b"},
+            line={"color": "black"},
             fill="tozeroy",
             yaxis="y",
         )
@@ -70,7 +73,7 @@ def main_collateralization_graph(stable, non_stable):
         yaxis2={"overlaying": "y", "side": "right"},
         legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="center", x=0.5),
         hovermode="x unified",
-        hoverlabel={"namelength": -1},
+        # hoverlabel={"namelength": -1},
     )
 
     figure1 = go.Figure(data=data1, layout=layout1)

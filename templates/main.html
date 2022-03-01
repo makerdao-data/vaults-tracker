@@ -33,11 +33,13 @@
                     </div>
                 </div>
 
-                <div id="graph-box" class="left-box" style="visibility: hidden;">
-                    <div class="chart" id="graph1">
+                <div id="graph-box-1" class="left-box" style="visibility: hidden;">
+                    <h3 style="margin-top: 30px; margin-left: 10px;">Value locked (USD) & debt (DAI) split by vault type</h3>
+                    <div class="chart" id="bar">
+                        
                         <script nonce="{{ csp_nonce() }}">
-                            let graph1 = {{plot | safe}};
-                            Plotly.plot('graph1', graph1, {});
+                            let bar = {{plot | safe}};
+                            Plotly.plot('bar', bar, {});
                         </script>
                     </div>
                 </div>
@@ -48,7 +50,7 @@
                 <div id="table_container" style="visibility: hidden;">
                     <div><h3 style="margin-top: 2px; ">Collaterals list<span id="list_num"></span>:</h3></div>
                     <div class="right-box">
-                        <table id="sorted-table" class="display nowrap" style="width:100%">
+                        <table id="sorted-table" class="display nowrap" style="width:99%">
                             <thead>
                                 <tr>
                                     <th>Colla-<br>teral</th>
@@ -129,8 +131,8 @@
                         $( "#cover" ).css("display", "none");
                         $( "#table_container" ).css("visibility", "visible");
 
-                        const plot = JSON.parse(data.plot);
-                        Plotly.newPlot('graph1', plot.data, plot.layout);
+                        const bar = JSON.parse(data.bar);
+                        Plotly.newPlot('bar', bar.data);
 
                         $("#data_html").html(`
                             <div class="kpi shadow">
@@ -175,8 +177,11 @@
                         `)
 
                         $( "#data_html" ).css("display", "contents");
-                        $( "#graph-box" ).css("visibility", "visible");
+                        $( "#graph-box-1" ).css("visibility", "visible");
                         $( "#list_num" ).text(" (" + data['collaterals_num'] + ")");
+                        $(".main-svg").css("background-color", "transparent");
+                        $('.bg').css("fill", "#fcfcfc");
+                        $('.plot-container').css('margin-top', '-55px');
 
                      } else {
                         const error_message = `
