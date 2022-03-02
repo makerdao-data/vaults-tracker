@@ -7,16 +7,40 @@ import pandas as pd
 
 def main_pie(data):
 
+    colors = ['#1aab9b', '#dddddd', '#444444', '#f0f0f0']
+
     labels = []
     values = []
-    for label, value, debt in data:
+
+    for label, value in data:
 
         labels.append(label)
         values.append(value)
 
     # Use `hole` to create a donut-like pie chart
-    fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.3)])
-    
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels,
+                values=values,
+                hole=.3,
+                hovertemplate='Value locked (USD): %{value:,.2f}<extra></extra>'
+            )
+        ],
+        layout= go.Layout(
+            hovermode= 'x unified',
+        )
+    )
+
+    fig.update_traces(
+        marker=dict(colors=colors)
+    )
+    fig.update_layout(
+        dict(
+            hovermode="x unified"
+        )
+    )
+
     graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     return graph_json
