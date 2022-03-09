@@ -13,7 +13,7 @@
  */
 
 
-body {
+ body {
     font-family: sans-serif;
     margin: 5px;
     color: #444444;
@@ -51,6 +51,11 @@ h2 {
 h3 {
     color: #1aab9b;
     font-size: 18px;
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-size: 16px;
     margin-bottom: 10px;
 }
 
@@ -116,6 +121,14 @@ span.expose a {
     grid-template-rows: 130px calc(100vh - 185px) 45px;
     max-height: 100%;
     max-width: 1800px;
+    margin: 0 auto;
+}
+
+.parameters_dashboard {
+    display: grid;
+    grid-template-rows: 130px calc(100vh - 185px) 45px;
+    max-height: 100%;
+    max-width: 2300px;
     margin: 0 auto;
 }
 
@@ -186,12 +199,13 @@ span.expose a {
 .main_title {
     font-size: 40px;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-top: 3px;
 }
 
 .refresh {
     font-size: 13px;
     margin-left: 2px;
+    padding-top: 3px;
 }
 
 .modal {
@@ -227,6 +241,10 @@ span.expose a {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.row_expose td {
+    background-color: #1aab9b50 !important;
 }
 
 .simple-table td, th {
@@ -330,34 +348,29 @@ input {
     border-radius: 0;
 }
 
-#sorted-table_filter input {
-    border-radius: 0;
-}
-
 #search {
     padding: 5px;
-    background-color: transparent;
 }
 
 .error {
-    font-family: sans-serif;
     font-family: monospace;
 }
 
-#sorted-table_length select {
+/*remove plotly toolbar*/
+.modebar {
+display: none !important;
+}
+
+#data_html input {
     border-radius: 0px;
 }
 
-#sorted-table_paginate span a {
+#table_container input, #table_container select {
     border-radius: 0px;
 }
 
-.modebar-container {
-    display: none;
-}
-
-.dataTables_wrapper {
-    min-width: 880px;
+#sorted-table_paginate .current {
+    border-radius: 0px;
 }
 
 .js-plotly-plot .plotly, .js-plotly-plot .plotly div {
@@ -366,7 +379,18 @@ input {
 
 .title-form-container {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+}
+
+.powered-by {
+    text-align: right;
+    margin-bottom: 8px;
+    margin-right: 10px;
+}
+
+.right_panel .dataTables_wrapper {
+    min-width: 880px;
 }
 
 @media screen and (max-width: 1024px) {
@@ -375,14 +399,10 @@ input {
         grid-template-rows: auto auto 45px;
     }
 
-    .main_title {
-        font-size: 36px;
-    }
-
     .split-contents {
         grid-template-columns: 100%;
-    } 
-    
+    }
+
     .header {
         grid-template-columns: 130px auto ;
     }
@@ -396,17 +416,15 @@ input {
         width: 100%;
         height: auto;
     }
-}
 
-.powered-by {
-    text-align: right;
-    margin-bottom: 8px;
-}
+    .left-box {
+        max-height: 500px;
+        margin-top: 0!important;
+    }
 
-.form-container, .title-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    .right_panel .dataTables_wrapper {
+        min-width: 600px;
+    }
 }
 
 @media screen and (max-width: 768px) {
@@ -424,26 +442,35 @@ input {
         margin-bottom: 15px;
     }
 
+    .title-form-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .title-container {
+        margin-bottom: 20px;
+    }
+
     .main_title {
         font-size: 24px;
+        padding-top: 0px;
     }
 
     .refresh {
         font-size: 11px;
+        padding-top: 3px;
     }
 
     #search {
-        width: 120px;
+        width: 100px;
     }
 
-    .title-form-container {
-        flex-direction: column;
+    .header form {
+        margin-bottom: 10px;
     }
 
-    .form-container {
-        flex-direction: row;
-        justify-content: space-between;
-        margin-top: 20px;
+    .powered-by {
+        text-align: right;
     }
 
     .kpi .expose {
@@ -461,6 +488,12 @@ input {
 
     .kpi.shadow {
         flex-direction: column;
+        overflow: hidden;
+    }
+
+    .kpi.shadow h3 {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .kpi.shadow .right-bottom {
@@ -476,4 +509,14 @@ input {
     .dt-buttons {
         float: none;
     }
+
+    #executives-table_filter {
+        float: left;
+    }
+}
+
+.center {
+    margin: auto;
+    border: 1px solid #73AD21;
+    padding: 3px;
 }

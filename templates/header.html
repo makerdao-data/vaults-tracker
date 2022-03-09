@@ -1,5 +1,6 @@
-<a href="/" class="logo-container"><img class="logo" src="{{ url_for('static', filename='logo.png') }}"></a>
+<!-- <a href="/" class="logo-container"><img class="logo" src="{{ url_for('static', filename='logo_no_bg.png') }}"></a>
 <div class="title-form-container">
+
     <div class="title-container">
 
         <div class="main_title">MCD Vaults Tracker</div>
@@ -7,23 +8,95 @@
 
     </div>
 
+
     <div class="form-container">
-        {% if form %}
-            <div style="margin-top: 0;">
-                <form method='post'>
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <table>
-                        <tr>
-                            <td>
-                                <button class='simple-button' type='submit'><i class='fa fa-search'></i></button>
-                            </td>
-                            <td>
-                                {{ form.search(placeholder="Vault id") }}
-                            </td>
-                        </tr>
-                    </table>
-                </form>
+
+            <div style="height: 60%;">
+                <img style='padding-right: 5px; float: right;' src="{{ url_for('static', filename='powered_by_tf_no_bg.png') }}"/>
             </div>
-        {% endif %}
+
+            <div style="display: flex;">
+                <div class="container" style="float: right; width: 100px;">
+                    <div class="vertical-center">
+                        <a style="text-decoration: none;" href="/history">History</a><br>
+                    </div>
+                </div>
+                {% if form %}
+                    <div style="margin-top: 0; float: right;">
+                        <form method='post'>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <button class='simple-button' type='submit'><i class='fa fa-search'></i></button>
+                                    </td>
+                                    <td>
+                                        {{ form.search(placeholder="Vault id") }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
     </div>
+
+
+</div> -->
+
+<a href="/" class="logo-container"><img alt="logo" class="logo" src="{{ url_for('static', filename='logo_no_bg.png') }}"></a>
+
+<div class="title-form-container">
+
+    <div style="width: 100%; overflow: hidden">
+
+        <div style="width: 50%; float:left;">
+            <div class="main_title">MCD Vaults Tracker</div>
+            <div class="refresh">Last refresh: {{ refresh.__str__()[:19] }} UTC</div>
+        </div>
+
+        <div style="width: 50%; float:left;">
+
+            <div style="float: right;">
+                <div style="width: 100%; overflow: hidden">
+
+
+                    <div style="float:left; margin-top: 20px; margin-right: 20px;">
+
+                            <a style="text-decoration: none;" href="/history">Vaults history</a>
+
+                    </div>
+                    <!-- next menu items -->
+                    <div style="float:left; margin-top: 12px;">
+                            {% if form %}
+                                <form method='post'>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <button class='simple-button' type='submit'><i class='fa fa-search'></i></button>
+                                            </td>
+                                            <td>
+                                                {{ form.search(placeholder="Vault id") }}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </form>
+                            {% endif %}
+                    </div>
+                                
+
+                </div>
+            </div>
+
+        </div>
+
+        
+
+    </div>
+    <div style="width: 215px;">
+        <img style='padding-right: 5px; float: right;' src="{{ url_for('static', filename='powered_by_tf_no_bg.png') }}"/>
+    </div>
+
 </div>

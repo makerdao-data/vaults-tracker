@@ -190,7 +190,7 @@ def tos_page():
     return render_template("tos.html", refresh=datetime.utcnow())
 
 
-@app.route("/history")
+@app.route("/history", methods=["GET", "POST"])
 def history_page():
     return history_page_view(sf)
 
@@ -255,7 +255,14 @@ def data(s, e):
         if col_index is None:
             break
         col_name = request.args.get(f'columns[{col_index}][data]')
-        if col_name not in ['day', 'vault', 'ilk', 'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod']:
+        if col_name not in [
+            'day', 'vault', 'ilk',
+            'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod',
+            'withdraw', 'deposit',
+            'principal_generate', 'principal_payback',
+            'debt_generate', 'debt_payback',
+            'accrued_fees'
+        ]:
             col_name = 'day'
         descending = request.args.get(f'order[{i}][dir]') == 'desc'
         col = getattr(History, col_name)
