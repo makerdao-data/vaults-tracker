@@ -28,7 +28,7 @@ def main_pie(data):
             )
         ],
         layout= go.Layout(
-            hovermode= 'x unified',
+            hovermode= 'x unified'
         )
     )
 

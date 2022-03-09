@@ -11,9 +11,12 @@
 #  limitations under the License.
 
 import os
-from flask import render_template
+from flask import render_template, request
 from connectors.sf import sf_connect
+from utils.utils import get_last_refresh
 
+from forms.forms import SearchForm
+from utils.searchbar import run_search
 
 def history_page_view(sf):
 
@@ -30,8 +33,16 @@ def history_page_view(sf):
 
     try:
 
+        block, last_time = get_last_refresh(sf)
+
+        search = SearchForm(request.form)
+        if request.method == "POST":
+            return run_search(search.data["search"])
+
         return render_template(
-            "vaults_history.html"
+            "vaults_history.html",
+            refresh="{0:,.0f}".format(block) + " / " + str(last_time),
+            form=search,
         )
 
     except Exception as e:

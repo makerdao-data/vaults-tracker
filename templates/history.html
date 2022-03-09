@@ -6,7 +6,7 @@
     {% include 'head.html' %}
 </head>
 <body>
-    <div class="vaults_history">
+    <div class="dashboard">
 
         <div class="header shadow">
             <a href="/" class="logo-container"><img alt="logo" class="logo" src="{{ url_for('static', filename='logo.png') }}"></a>
@@ -90,7 +90,7 @@
                             buttons: [ {
                                 extend: 'csv',
                                 text: 'Export to CSV',
-                                filename: 'MKR_vaults_history',
+                                filename: 'MKR_dashboard',
                                 exportOptions: {
                                     modifier: {
                                         search: 'none'
