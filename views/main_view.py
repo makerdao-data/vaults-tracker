@@ -33,6 +33,7 @@ def main_page_data(sf):
     # test snowflake connection and reconnect if necessary
     try:
         if sf.is_closed():
+            print('RECONNECTING')
             sf = sf_connect()
         if sf.is_closed():
             raise Exception("Reconnection failed")
@@ -43,6 +44,7 @@ def main_page_data(sf):
 
     try:
 
+        print('QUERIES')
         # list of available collaterals
         ilks_query = "SELECT ilk FROM internal.ilks; "
 
@@ -125,6 +127,7 @@ def main_page_data(sf):
         sin = sf_responses["sin"]
         sin = sin[0][0]
 
+        print('PROCESSING')
         # data processing
 
         collaterals = dict()
@@ -334,6 +337,8 @@ def main_page_data(sf):
         bar = main_bar(bar_data)
 
         sin = "{0:,.2f}".format(sin)
+
+        print('OUTPUT')
 
         return dict(
             status="success",
