@@ -44,7 +44,7 @@ app.config["DEBUG"] = True
 csrf = CSRFProtect(app)
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from database import Base
 
 # Connect to Database and create database session
@@ -168,60 +168,62 @@ def data(s, e):
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
+    with Session(engine) as session:
+        query = session.query(History)
+        query = query.filter(History.day >= s).filter(History.day <= e)
 
-    query = session.query(History)
-    query = query.filter(History.day >= s).filter(History.day <= e)
+        vault = request.args.get('search_vault')
+        if vault:
+            query = query.filter(
+                History.vault == str(vault)
+            )
+        
+        ilk = request.args.get('search_ilk')
+        if ilk:
+            query = query.filter(
+                History.ilk == str(ilk)
+            )
 
-    vault = request.args.get('search_vault')
-    if vault:
-        query = query.filter(
-            History.vault == str(vault)
-        )
-    
-    ilk = request.args.get('search_ilk')
-    if ilk:
-        query = query.filter(
-            History.ilk == str(ilk)
-        )
+        total_filtered = query.count()
 
-    total_filtered = query.count()
+        # sorting
+        order = []
+        i = 0
+        while True:
+            col_index = request.args.get(f'order[{i}][column]')
+            if col_index is None:
+                break
+            col_name = request.args.get(f'columns[{col_index}][data]')
+            if col_name not in [
+                'day', 'vault', 'ilk',
+                'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod',
+                'withdraw', 'deposit',
+                'principal_generate', 'principal_payback',
+                'debt_generate', 'debt_payback',
+                'accrued_fees'
+            ]:
+                col_name = 'day'
+            descending = request.args.get(f'order[{i}][dir]') == 'desc'
+            col = getattr(History, col_name)
+            if descending:
+                col = col.desc()
+            order.append(col)
+            i += 1
+        if order:
+            query = query.order_by(*order)
 
-    # sorting
-    order = []
-    i = 0
-    while True:
-        col_index = request.args.get(f'order[{i}][column]')
-        if col_index is None:
-            break
-        col_name = request.args.get(f'columns[{col_index}][data]')
-        if col_name not in [
-            'day', 'vault', 'ilk',
-            'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod',
-            'withdraw', 'deposit',
-            'principal_generate', 'principal_payback',
-            'debt_generate', 'debt_payback',
-            'accrued_fees'
-        ]:
-            col_name = 'day'
-        descending = request.args.get(f'order[{i}][dir]') == 'desc'
-        col = getattr(History, col_name)
-        if descending:
-            col = col.desc()
-        order.append(col)
-        i += 1
-    if order:
-        query = query.order_by(*order)
+        # pagination
+        start = request.args.get('start', type=int)
+        length = request.args.get('length', type=int)
+        query = query.offset(start).limit(length)
 
-    # pagination
-    start = request.args.get('start', type=int)
-    length = request.args.get('length', type=int)
-    query = query.offset(start).limit(length)
+        records_total = session.query(History).count()
 
     # response
     return {
         'data': [record.to_dict() for record in query],
         'recordsFiltered': total_filtered,
-        'recordsTotal': session.query(History).count(),
+        'recordsTotal': records_total,
         'draw': request.args.get('draw', type=int),
     }
 
@@ -233,20 +235,22 @@ def history_export(s, e):
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
-    query = session.query(History)
-    query = query.filter(History.day >= s).filter(History.day <= e)
+    with Session(engine) as session:
 
-    vault = request.args.get('search_vault')
-    if vault:
-        query = query.filter(
-            History.vault == str(vault)
-        )
-    
-    ilk = request.args.get('search_ilk')
-    if ilk:
-        query = query.filter(
-            History.ilk == str(ilk)
-        )
+        query = session.query(History)
+        query = query.filter(History.day >= s).filter(History.day <= e)
+
+        vault = request.args.get('search_vault')
+        if vault:
+            query = query.filter(
+                History.vault == str(vault)
+            )
+        
+        ilk = request.args.get('search_ilk')
+        if ilk:
+            query = query.filter(
+                History.ilk == str(ilk)
+            )
 
     def generate():
 
