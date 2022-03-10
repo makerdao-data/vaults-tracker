@@ -27,6 +27,7 @@ from werkzeug.wrappers import Response
 
 from config import SECRET, connect_url
 from connectors.sf import sf, sf_disconnect
+from models.history import History
 from views.main_view import main_page_view, main_page_data
 from views.vault_view import vault_page_view, vault_page_data
 from views.collateral_view import collateral_page_view, collateral_page_data
@@ -42,15 +43,18 @@ app.config["JSON_SORT_KEYS"] = False
 app.config["DEBUG"] = True
 csrf = CSRFProtect(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = connect_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database import Base
 
-db.session.client_session_keep_alive = True
-engine = create_engine(connect_url, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-Base.metadata.create_all(bind=engine)
+# Connect to Database and create database session
+from database import engine
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
+from models import History
+
 
 SELF = "'self'"
 UNSAFE_INLINE = "'unsafe-inline'"
@@ -86,70 +90,6 @@ talisman = Talisman(
     content_security_policy_nonce_in=["script-src"],
     feature_policy={"geolocation": "'none'"},
 )
-
-class History(db.Model):
-
-    __tablename__ = 'vaults'
-
-    day = db.Column(db.DateTime)
-    vault = db.Column(db.String)
-    ilk = db.Column(db.String)
-    collateral_eod = db.Column(db.Float)
-    principal_eod = db.Column(db.Float)
-    debt_eod = db.Column(db.Float)
-    fees_eod = db.Column(db.Float)
-    withdraw = db.Column(db.Float)
-    deposit = db.Column(db.Float)
-    principal_generate = db.Column(db.Float)
-    principal_payback = db.Column(db.Float)
-    debt_generate = db.Column(db.Float)
-    debt_payback = db.Column(db.Float)
-    fees = db.Column(db.Float)
-
-    def to_dict(self):
-        return {
-            'day' : self.day,
-            'vault' : self.vault, 
-            'ilk' : self.ilk,
-            'collateral_eod' : self.collateral_eod,
-            'principal_eod' : self.principal_eod,
-            'debt_eod' : self.debt_eod,
-            'fees_eod' : self.fees_eod,
-            'withdraw' : self.withdraw,
-            'deposit' : self.deposit,
-            'principal_generate' : self.principal_generate,
-            'principal_payback' : self.principal_payback,
-            'debt_generate' : self.debt_generate,
-            'debt_payback' : self.debt_payback,
-            'fees' : self.fees,
-        }
-    
-    def to_list(self):
-        return [
-            self.day.__str__(),
-            self.vault, 
-            self.ilk,
-            self.collateral_eod,
-            self.principal_eod,
-            self.debt_eod,
-            self.fees_eod,
-            self.withdraw,
-            self.deposit,
-            self.principal_generate,
-            self.principal_payback,
-            self.debt_generate,
-            self.debt_payback,
-            self.fees
-        ]
-    
-    __table_args__ = {"schema": "maker.history"}
-    __mapper_args__ = {
-        "primary_key": [
-            day,
-            vault,
-            ilk
-        ]
-    }
 
 
 # HTML endpoints -------------------------------------------
@@ -225,12 +165,11 @@ def get_owner_page_data(owner_id):
 @app.route("/data/history/<s>/<e>", methods=["GET", "POST"])
 def data(s, e):
 
-    db = SessionLocal()
-
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
-    query = History.query
+
+    query = session.query(History)
     query = query.filter(History.day >= s).filter(History.day <= e)
 
     vault = request.args.get('search_vault')
@@ -282,7 +221,7 @@ def data(s, e):
     return {
         'data': [record.to_dict() for record in query],
         'recordsFiltered': total_filtered,
-        'recordsTotal': History.query.count(),
+        'recordsTotal': session.query(History).count(),
         'draw': request.args.get('draw', type=int),
     }
 
@@ -290,12 +229,11 @@ def data(s, e):
 @app.route("/data/history_export/<s>/<e>", methods=["GET"])
 def history_export(s, e):
 
-    db = SessionLocal()
 
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
-    query = History.query
+    query = session.query(History)
     query = query.filter(History.day >= s).filter(History.day <= e)
 
     vault = request.args.get('search_vault')
