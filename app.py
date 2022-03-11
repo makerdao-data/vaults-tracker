@@ -11,6 +11,7 @@
 #  limitations under the License.
 
 from flask import Flask, request, render_template, jsonify, Response
+from typing import Generator
 from datetime import datetime
 import atexit
 from flask_talisman import Talisman
@@ -34,6 +35,7 @@ from views.collateral_view import collateral_page_view, collateral_page_data
 from views.owner_view import owner_page_view, owner_page_data
 from views.history_view import history_page_view
 
+from deps import get_db
 
 registry.register("snowflake", "snowflake.sqlalchemy", "dialect")
 
@@ -45,14 +47,9 @@ csrf = CSRFProtect(app)
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from database import Base
 
-# Connect to Database and create database session
-from database import engine
-Base.metadata.bind = engine
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
-
+from database import Base, engine, SessionLocal
+from config import connect_url
 from models import History
 
 
@@ -168,56 +165,57 @@ def data(s, e):
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
-    with Session(engine) as session:
-        query = session.query(History)
-        query = query.filter(History.day >= s).filter(History.day <= e)
+    session = next(get_db())
 
-        vault = request.args.get('search_vault')
-        if vault:
-            query = query.filter(
-                History.vault == str(vault)
-            )
-        
-        ilk = request.args.get('search_ilk')
-        if ilk:
-            query = query.filter(
-                History.ilk == str(ilk)
-            )
+    query = session.query(History)
+    query = query.filter(History.day >= s).filter(History.day <= e)
 
-        total_filtered = query.count()
+    vault = request.args.get('search_vault')
+    if vault:
+        query = query.filter(
+            History.vault == str(vault)
+        )
+    
+    ilk = request.args.get('search_ilk')
+    if ilk:
+        query = query.filter(
+            History.ilk == str(ilk)
+        )
 
-        # sorting
-        order = []
-        i = 0
-        while True:
-            col_index = request.args.get(f'order[{i}][column]')
-            if col_index is None:
-                break
-            col_name = request.args.get(f'columns[{col_index}][data]')
-            if col_name not in [
-                'day', 'vault', 'ilk',
-                'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod',
-                'withdraw', 'deposit',
-                'principal_generate', 'principal_payback',
-                'debt_generate', 'debt_payback',
-                'accrued_fees'
-            ]:
-                col_name = 'day'
-            descending = request.args.get(f'order[{i}][dir]') == 'desc'
-            col = getattr(History, col_name)
-            if descending:
-                col = col.desc()
-            order.append(col)
-            i += 1
-        if order:
-            query = query.order_by(*order)
+    total_filtered = query.count()
 
-        # pagination
-        start = request.args.get('start', type=int)
-        length = request.args.get('length', type=int)
-        query = query.offset(start).limit(length)
+    # sorting
+    order = []
+    i = 0
+    while True:
+        col_index = request.args.get(f'order[{i}][column]')
+        if col_index is None:
+            break
+        col_name = request.args.get(f'columns[{col_index}][data]')
+        if col_name not in [
+            'day', 'vault', 'ilk',
+            'collateral_eod', 'principal_eod', 'debt_eod', 'fees_eod',
+            'withdraw', 'deposit',
+            'principal_generate', 'principal_payback',
+            'debt_generate', 'debt_payback',
+            'accrued_fees'
+        ]:
+            col_name = 'day'
+        descending = request.args.get(f'order[{i}][dir]') == 'desc'
+        col = getattr(History, col_name)
+        if descending:
+            col = col.desc()
+        order.append(col)
+        i += 1
+    if order:
+        query = query.order_by(*order)
 
-        records_total = session.query(History).count()
+    # pagination
+    start = request.args.get('start', type=int)
+    length = request.args.get('length', type=int)
+    query = query.offset(start).limit(length)
+
+    records_total = session.query(History).count()
 
     # response
     return {
@@ -235,22 +233,22 @@ def history_export(s, e):
     s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
     e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
 
-    with Session(engine) as session:
+    session = next(get_db())
 
-        query = session.query(History)
-        query = query.filter(History.day >= s).filter(History.day <= e)
+    query = session.query(History)
+    query = query.filter(History.day >= s).filter(History.day <= e)
 
-        vault = request.args.get('search_vault')
-        if vault:
-            query = query.filter(
-                History.vault == str(vault)
-            )
-        
-        ilk = request.args.get('search_ilk')
-        if ilk:
-            query = query.filter(
-                History.ilk == str(ilk)
-            )
+    vault = request.args.get('search_vault')
+    if vault:
+        query = query.filter(
+            History.vault == str(vault)
+        )
+    
+    ilk = request.args.get('search_ilk')
+    if ilk:
+        query = query.filter(
+            History.ilk == str(ilk)
+        )
 
     def generate():
 
