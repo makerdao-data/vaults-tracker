@@ -107,12 +107,12 @@
                                 });
 
                                 $("#export").on("click",function(){
-                                    if ((($('#reportrange').data('daterangepicker').startDate - $('#reportrange').data('daterangepicker').endDate) / 1000) / 86400 * -1 < 7){
+                                    if ((($('#reportrange').data('daterangepicker').startDate.utc().unix() - $('#reportrange').data('daterangepicker').endDate.utc().unix()) / 1000) / 86400 * -1 < 7){
 
                                         // window.open(
                                         // '/data/history_export/' +
-                                        //             $('#reportrange').data('daterangepicker').startDate + '/' +
-                                        //             $('#reportrange').data('daterangepicker').endDate
+                                        //             $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' +
+                                        //             $('#reportrange').data('daterangepicker').endDate.utc().unix()
                                         //         );
 
                                         const saveData = (function () {
@@ -130,7 +130,7 @@
                                         }());
 
                                         var req = $.ajax({
-                                            url: '/data/history_export/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                            url: '/data/history_export/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
                                             data: {
                                                 "search_vault": $("#search_vault").val(),
                                                 "search_ilk": $("#search_ilk").val()
@@ -156,7 +156,7 @@
                                 $('#sorted-table').DataTable({
                                 
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
                                             "search_ilk": $("#search_ilk").val()
@@ -207,7 +207,7 @@
                                 $('#sorted-table').DataTable({
                     
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
                                             "search_ilk": $("#search_ilk").val()
@@ -254,7 +254,7 @@
                                 $('#sorted-table').DataTable({
                     
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate + '/' + $('#reportrange').data('daterangepicker').endDate,
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
                                             "search_ilk": $("#search_ilk").val()
