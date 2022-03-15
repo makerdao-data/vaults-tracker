@@ -87,6 +87,8 @@
                                     var end = moment().subtract(1, 'days');
 
                                     function cb(start, end) {
+                                        console.log(start)
+                                        console.log(end)
                                         $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                                     }
 
@@ -107,13 +109,7 @@
                                 });
 
                                 $("#export").on("click",function(){
-                                    if ((($('#reportrange').data('daterangepicker').startDate.utc().unix() - $('#reportrange').data('daterangepicker').endDate.utc().unix()) / 1000) / 86400 * -1 < 7){
-
-                                        // window.open(
-                                        // '/data/history_export/' +
-                                        //             $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' +
-                                        //             $('#reportrange').data('daterangepicker').endDate.utc().unix()
-                                        //         );
+                                    if (($('#reportrange').data('daterangepicker').startDate.unix() - $('#reportrange').data('daterangepicker').endDate.unix()) / 86400 * -1 < 7){
 
                                         const saveData = (function () {
                                             const a = document.createElement("a");
@@ -130,10 +126,11 @@
                                         }());
 
                                         var req = $.ajax({
-                                            url: '/data/history_export/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
+                                            url: '/data/history_export/' + $('#reportrange').data('daterangepicker').startDate.unix() + '/' + $('#reportrange').data('daterangepicker').endDate.unix(),
                                             data: {
                                                 "search_vault": $("#search_vault").val(),
-                                                "search_ilk": $("#search_ilk").val()
+                                                "search_ilk": $("#search_ilk").val(),
+                                                "offset": (new Date()).getTimezoneOffset()/60
                                             }
                                         });
 
@@ -154,12 +151,13 @@
                             function ld() {
                                 
                                 $('#sorted-table').DataTable({
-                                
+
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.unix() + '/' + $('#reportrange').data('daterangepicker').endDate.unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
-                                            "search_ilk": $("#search_ilk").val()
+                                            "search_ilk": $("#search_ilk").val(),
+                                            "offset": (new Date()).getTimezoneOffset()/60
                                         },
                                     },
                                     serverSide: true,
@@ -207,10 +205,11 @@
                                 $('#sorted-table').DataTable({
                     
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.unix() + '/' + $('#reportrange').data('daterangepicker').endDate.unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
-                                            "search_ilk": $("#search_ilk").val()
+                                            "search_ilk": $("#search_ilk").val(),
+                                            "offset": (new Date()).getTimezoneOffset()/60
                                         },
                                     },
                                     serverSide: true,
@@ -254,10 +253,11 @@
                                 $('#sorted-table').DataTable({
                     
                                     ajax: {
-                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.utc().unix() + '/' + $('#reportrange').data('daterangepicker').endDate.utc().unix(),
+                                        url: '/data/history/' + $('#reportrange').data('daterangepicker').startDate.unix() + '/' + $('#reportrange').data('daterangepicker').endDate.unix(),
                                         data: {
                                             "search_vault": $("#search_vault").val(),
-                                            "search_ilk": $("#search_ilk").val()
+                                            "search_ilk": $("#search_ilk").val(),
+                                            "offset": (new Date()).getTimezoneOffset()/60
                                         },
                                     },
                                     serverSide: true,
