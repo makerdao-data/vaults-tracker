@@ -352,7 +352,6 @@ def main_page_data(sf):
                 active_owners=active_owners_num,
                 collateralization=total_collateralization,
                 locked_value=locked_value,
-                refresh=datetime.utcnow(),
                 sin=sin,
                 pie=pie,
                 bar=bar
