@@ -34,14 +34,14 @@
                     </div>
                 </div>
 
-                <div id="graph-box" class="left-box" style="visibility: hidden;">
+                <!-- <div id="graph-box" class="left-box" style="visibility: hidden;">
                     <div class="chart" id="graph1">
                         <script nonce="{{ csp_nonce() }}">
                             let graph1 = {{plot | safe}};
                             Plotly.plot('graph1', graph1, {});
                         </script>
                     </div>
-                </div>
+                </div> -->
 
             </div>
 
@@ -144,8 +144,8 @@
                         $("#cover").css("display", "none");
                         $("#table_container").css("visibility", "visible");
 
-                        const plot = JSON.parse(data.plot);
-                        Plotly.newPlot('graph1', plot.data, plot.layout);
+                        // const plot = JSON.parse(data.plot);
+                        // Plotly.newPlot('graph1', plot.data, plot.layout);
 
                         $("#data_html").html(`
                             <div class="kpi shadow">
@@ -194,7 +194,7 @@
                         `)
 
                         $("#data_html").css("display", "contents");
-                        $("#graph-box").css("visibility", "visible");
+                        // $("#graph-box").css("visibility", "visible");
                         $("#list_num").text("(" + data['active_num'] + ")");
 
                         if (data['collateralization'] === '-') {
