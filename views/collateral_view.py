@@ -136,16 +136,16 @@ def collateral_page_data(sf, collateral_id):
                     )
                 )
 
-        # calculate the collateralization buckets
-        coll_buckets = list(coll_buckets.items())
-        coll_buckets.sort(key=lambda c: c[0])
-        x = []
-        y = []
-        v_sum = 0
-        for c, v in coll_buckets:
-            v_sum += v
-            x.append(c / 100)
-            y.append(v_sum)
+        # # calculate the collateralization buckets
+        # coll_buckets = list(coll_buckets.items())
+        # coll_buckets.sort(key=lambda c: c[0])
+        # x = []
+        # y = []
+        # v_sum = 0
+        # for c, v in coll_buckets:
+        #     v_sum += v
+        #     x.append(c / 100)
+        #     y.append(v_sum)
 
         # calculate total stats
         token = collateral_id.split("-")[0]
@@ -183,11 +183,13 @@ def collateral_page_data(sf, collateral_id):
             cur = "{0:,.2f}".format(1)
             nxt = "{0:,.2f}".format(1)
         else:
+
+            p = get_price_from_chain(pip_oracle[0], pip_oracle[1])
             cur = "{0:,.2f}".format(
-                get_price_from_chain(pip_oracle[0], pip_oracle[1])[0]
+                p[0]
             )
             nxt = "{0:,.2f}".format(
-                get_price_from_chain(pip_oracle[0], pip_oracle[1])[1]
+               p[1]
             )
 
         r = requests.get(
@@ -200,7 +202,7 @@ def collateral_page_data(sf, collateral_id):
             coinbase_response = json.loads(r.text)
             market_price = coinbase_response["data"]["amount"]
 
-        plot = collateralization_graph(collateral_id, x, y, mat)
+        # plot = collateralization_graph(collateral_id, x, y, mat)
 
         return dict(
             status="success",
@@ -220,7 +222,7 @@ def collateral_page_data(sf, collateral_id):
                 available_debt=available_debt,
                 vaults_num=vaults_num,
                 active_num=active_num,
-                plot=plot,
+                # plot=plot,
                 current_osm_price=cur,
                 next_osm_price=nxt,
                 market_price=market_price,
