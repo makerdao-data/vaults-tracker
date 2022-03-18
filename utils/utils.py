@@ -164,6 +164,9 @@ def get_price_from_chain(address, type):
     elif type == "lp":
         current_price = get_current_LPOracle_price(address)
         next_price = get_next_LPOracle_price(address)
+    elif type == 'None':
+        current_price = get_current_LPOracle_price(address)
+        next_price = get_next_LPOracle_price(address)
     else:
         current_price = 0
         next_price = 0

@@ -162,8 +162,13 @@ def get_owner_page_data(owner_id):
 @app.route("/data/history/<s>/<e>", methods=["GET", "POST"])
 def data(s, e):
 
-    s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
-    e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
+    offset = int(request.args.get('offset'))
+
+    s = datetime.utcfromtimestamp(int(s) - (offset*3600)).__str__()[:10]
+    e = datetime.utcfromtimestamp(int(e) - (offset*3600)).__str__()[:10]
+
+    # s = datetime.fromtimestamp(int(s)).__str__()[:10]
+    # e = datetime.fromtimestamp(int(e)).__str__()[:10]
 
     session = next(get_db())
 
@@ -229,9 +234,10 @@ def data(s, e):
 @app.route("/data/history_export/<s>/<e>", methods=["GET"])
 def history_export(s, e):
 
+    offset = int(request.args.get('offset'))
 
-    s = datetime.fromtimestamp(int(s)/1000).__str__()[:10]
-    e = datetime.fromtimestamp(int(e)/1000).__str__()[:10]
+    s = datetime.utcfromtimestamp(int(s) - (offset*3600)).__str__()[:10]
+    e = datetime.utcfromtimestamp(int(e) - (offset*3600)).__str__()[:10]
 
     session = next(get_db())
 
