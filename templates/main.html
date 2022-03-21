@@ -37,7 +37,7 @@
                     </div>
                 </div>
 
-                <div id="graph-box-1" class="left-box" style="visibility: hidden; width: 100%;">
+                <div id="graph-box-1" style="visibility: hidden; width: 100%;">
                     <div class="kpi shadow">
                    
                     <div class="inner_left" style="max-width: 642px;" id="bar">
@@ -141,7 +141,7 @@
                         const pie = JSON.parse(data.pie);
                         var pie_layout = {
                                         autosize: false,
-                                        width: 600,
+                                        width: 500,
                                         height: 400,
                                         title: {text: 'DAI collateral split'}
                                     };
@@ -149,7 +149,7 @@
 
                         var bar_layout = {
                                         autosize: false,
-                                        width: 600,
+                                        width: 500,
                                         height: 400,
                                         title: {text: 'Value locked (USD) & debt (DAI) split by vault type'},
                                         xaxis: {tickangle: 20}
