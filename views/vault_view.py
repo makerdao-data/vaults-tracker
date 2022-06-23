@@ -122,7 +122,7 @@ def vault_page_data(sf, vault_id):
                 record[2],
                 link(
                     record[5],
-                    f"https://ethtx.info/{record[3]}",
+                    f"https://etherscan.io/tx/{record[3]}",
                     f"{record[5]} transaction",
                 )
                 if record[5]
