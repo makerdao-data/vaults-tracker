@@ -3,8 +3,7 @@ version: "3.8"
 
 services:
   web:
-    build: .
-    image: mcdstate:latest
+    image: mcdstate:80
     ports:
       - "80:80"
     env_file:
@@ -12,3 +11,14 @@ services:
     volumes:
       - type: tmpfs
         target: /tmpfs
+      - /home/ubuntu/certs/mcdstate/:/certs
+  webssl:
+    image: mcdstate:443
+    ports:
+      - "443:443"
+    env_file:
+      - .env
+    volumes:
+      - type: tmpfs
+        target: /tmpfs
+      - /home/ubuntu/certs/mcdstate/:/certs
