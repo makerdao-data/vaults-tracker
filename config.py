@@ -14,8 +14,9 @@ import os
 from dotenv import load_dotenv
 import sqlalchemy
 
-PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+load_dotenv()
 
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 
 class EnvVariableError(Exception):
     pass

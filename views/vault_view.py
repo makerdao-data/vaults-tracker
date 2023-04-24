@@ -77,7 +77,7 @@ def vault_page_data(sf, vault_id):
         current_query = (
             f"""
             SELECT *
-            FROM mcd.public.current_vaults
+            FROM mcd.internal.current_vaults
             WHERE vault = '{vault_id}';
             """
         )
@@ -348,7 +348,7 @@ def vault_page_view(sf, vault_id):
         current = sf.execute(
             f"""
             SELECT ilk, owner, block_created, time_created
-            FROM mcd.public.current_vaults
+            FROM mcd.internal.current_vaults
             WHERE vault = '{vault_id}';
             """
         ).fetchone()

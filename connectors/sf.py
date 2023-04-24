@@ -13,10 +13,11 @@
 # Token FLow connector for SnowFlake
 
 import snowflake.connector
-from config import SNOWFLAKE_CONNECTION
+from config import SNOWFLAKE_CONNECTION 
 
 
 def sf_connect():
+
     connection = snowflake.connector.connect(
         **SNOWFLAKE_CONNECTION, client_session_keep_alive=True
     )
